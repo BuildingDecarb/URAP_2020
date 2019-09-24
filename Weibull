@@ -1,0 +1,125 @@
+def weib0(self):   #before vintage year = 2005
+        x = range(0, self.lt+UltimYr0+1)
+        shape = 2.1
+        loc = 1.0
+        w = weibull_min.cdf(x,shape,loc,scale = self.lt+2  )
+      #  print "w2",w
+        return(w)
+
+    def weib1(self):   #before vintage year = 2005
+        x = range(0, self.lt+UltimYr0+1)
+        shape = 2.1
+        loc = 1.0
+        w = weibull_min.cdf(x,shape,loc,scale =self.lt+2 )
+      #  print "w2",w
+        return(w)
+
+    def weib2(self):
+
+        x = range(0, self.lt+UltimYr0+1)
+        shape = 2.1
+        loc = 1.0
+        w = weibull_min.cdf(x,shape,loc,scale = self.lt +2)
+      #  print "w2",w
+        return(w)
+#following outputs conditional prob of dying any specific year based on weibul distr
+
+    def dead_prob0(self,yr):
+       # print "dead_prob Input", yr, self.name, self.vintage ,  self.lt,  UltimYr2
+        if yr >= self.vintage + self.lt + UltimYr0 :                 #past life then dead
+           return 1.0
+        else:
+           dead_yr = self.weib0()[yr - self.vintage] #cumulative dead up tothis year
+           dead_yr1 = self.weib0()[yr+1 - self.vintage]# cumulative dead next year
+           dead_thisyr = max(0,dead_yr1 - dead_yr )  #dead this year
+           if dead_yr == 0 or dead_yr1 ==0:  #if cumulative death is 0 then prob of death is 0
+               return 0.0
+           elif round(dead_yr,0)==1 and round(dead_yr1,0)==1:
+               return 1
+           else:
+               p = (dead_thisyr)/(1-dead_yr)  #prob of death this year
+           #    print "dead_prob0",yr,self.vintage, dead_thisyr,dead_yr, dead_yr1, p  #,dead_thisyr, 1-dead_yr  #/dead_yr
+               return p
+
+    def dead_prob1(self,yr):
+       # print "dead_prob Input", yr, self.name, self.vintage ,  self.lt,  UltimYr2
+        if yr >= self.vintage + self.lt + UltimYr1 :                 #past life then dead
+           return 1.0
+        else:
+           dead_yr = self.weib1()[yr - self.vintage] #cumulative dead up tothis year
+           dead_yr1 = self.weib1()[yr+1 - self.vintage]# cumulative dead next year
+           dead_thisyr = max(0,dead_yr1 - dead_yr )  #dead this year
+           if dead_yr == 0 or dead_yr1 ==0:  #if cumulative death is 0 then prob of death is 0
+               return 0.0
+           elif round(dead_yr,0)==1 and round(dead_yr1,0)==1:
+               return 1
+           else:
+               p = (dead_thisyr)/(1-dead_yr)  #prob of death this year
+            #   print "dead_prob1",yr,self.vintage, dead_thisyr,dead_yr, dead_yr1,p  #,dead_thisyr, 1-dead_yr  #/dead_yr
+               return p  #
+    
+    def dead_prob2(self,yr):
+       # print "dead_prob Input", yr, self.name, self.vintage ,  self.lt,  UltimYr2
+        if yr >= self.vintage + self.lt + UltimYr2 :                 #past life then dead
+           return 1.0
+        else:
+           dead_yr = self.weib2()[yr - self.vintage] #cumulative dead up tothis year
+           dead_yr1 = self.weib2()[yr+1 - self.vintage]# cumulative dead next year
+           dead_thisyr = max(0,dead_yr1 - dead_yr )  #dead this year
+           if dead_yr == 0 or dead_yr1 ==0:  #if cumulative death is 0 then prob of death is 0
+               return 0.0
+           elif round(dead_yr,0)==1 and round(dead_yr1,0)==1:
+               return 1
+           else:
+               p = (dead_thisyr)/(1-dead_yr)  #prob of death this year
+           #    print "dead_prob",yr, dead_thisyr,dead_yr, dead_yr1,p  #,dead_thisyr, 1-dead_yr  #/dead_yr
+               return p  #condition
+
+#the following based on the above cond prob. hastens the demise of older vintages
+    def death_prob(self, yr):
+         if yr > self.vintage:
+             life = yr - self.vintage
+         else:
+             return 0
+         if self.vintage <= 2000 and life > 40 :
+             return 1
+       #  elif self.vintage >2000 and self.vintage <=ThisYear and life
+         elif self.vintage <= 2000 and yr < Phase11:
+          #   print "P0", yr, self.vintage, self.dead_prob0(yr)
+             return self.dead_prob0(yr)
+         elif self.vintage >2000 and self.vintage <= ThisYear and  yr < Phase11:  #this year >2018 and appliance installed between 2000 and 2018
+          #   print "P1", yr, self.vintage, self.dead_prob1(yr)
+             return self.dead_prob1(yr)
+         else:
+           #   print "P2", yr, self.vintage, self.dead_prob2(yr)
+              return self.dead_prob2(yr)
+
+    def dead_alive(self,yr):
+         p = self.death_prob(yr)
+         N =1   #coin tossed N times..
+         n=1
+         s =sum(np.random.binomial(n, p,N)==1)/N  #   flipping a coin - with prob =p heads, device dies
+      #   print "prob", yr, p,s
+         return s
+
+    def deadsofar(self, yr):
+
+        if yr > self.vintage and yr < self.vintage+ self.lt + UltimYr2:
+
+             if self.vintage <= 2000 and yr < Phase11:
+              #   print yr, self.vintage
+                 return self.weib0()[yr-self.vintage]
+             elif self.vintage > 2000 and self.vintage <= ThisYear and yr <= Phase11:
+               #   print yr, self.vintage
+                  return self.weib1()[yr-self.vintage]
+             else:
+                #  print yr, self.vintage
+                  return self.weib2()[yr-self.vintage]
+
+        elif yr >= self.vintage + self.lt + UltimYr2:
+            return 1
+        else:
+            return 0
+
+    def numAlive(self,yr):
+       return (1 - self.deadsofar(yr))
