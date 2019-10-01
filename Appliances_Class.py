@@ -42,27 +42,29 @@ Ref12 = Refrigerant(650, 1, 0.005, 0.1, 0.3)   #...
 Ref13 = Refrigerant(1, 1, 0.005, 0.1, 0.3)
 
 class Device:
-    def __init__(self, name,fuel, ef, ef_cooler, C, s1,s2,Rval0, Rval1, Rval2, vintage, lt, IC, OM, hasRefrigerant=False, refrigerant = Refrigerant()):
+    def __init__(self, name, fuel, ef, ef_cooler, C, outputTemp=125, s1, s2, Rval0, Rval1, Rval2, vintage, lt, IC, OM, hasRefrigerant=False, refrigerant=Refrigerant()):
         self.name = name
         self.fuel = fuel
-        self.ef = ef  #Efficiency
+        self.ef = ef  # Efficiency
         self.ef_cooler = ef_cooler
-        self.C = C # climate zone number
-        self.HDD = cz[C,vintage].hdd # dictionary mapping climate zone number to climatezone object
+        self.C = C  # Climate zone number
+        self.HDD = cz[C, vintage].hdd  # cz is a dict mapping climate zone number to climatezone object
         self.CDD = cz[C, vintage].cdd
-        self.s1 = s1
-        self.s2 = s2
-        self.Rval0 = Rval0
-        self.Rval1 = Rval1
-        self.Rval2 = Rval2
-        self.vintage = vintage  #year of installation..typically assumed happens beginning of a year
-     #   self.StockSize = StockSize  #Original Num is the number of waterheaters created in the 'vintage'year
-        self.lt = lt    #lifetime
-        self.IC = IC   #Initial Cost could be just Capex or could be Capex+initial cost to build infrastructure
-        self.OM = OM  #Operations and Maintenance
+        self.inputTemp = cz[C, vintage].inputTemp
+        self.outputTemp = outputTemp
+        self.s1 = s1  # surface area of wall
+        self.s2 = s2  # surface area of roof
+        self.Rval0 = Rval0  # insulation of window
+        self.Rval1 = Rval1  # insulation of walls
+        self.Rval2 = Rval2  # insulation of roof
+        self.vintage = vintage  # Year of installation...typically assumed happens beginning of a year
+        # self.StockSize = StockSize  #Original Num is the number of waterheaters created in the 'vintage'year
+        self.lt = lt  # Lifetime
+        self.IC = IC  # Initial Cost could be just Capex or could be Capex+initial cost to build infrastructure
+        self.OM = OM  # Operations and Maintenance
         self.hasRefrigerant = hasRefrigerant
         self.refrigerant = refrigerant
-        self.IncTemp = 75  #cz[C,vintage].IncTemp
+        self.IncTemp = self.outputTemp - self.inputTemp  #cz[C,vintage].IncTemp
         self.dailyVol = 50
 
     def weib0(self):   #before vintage year = 2005
@@ -193,7 +195,7 @@ class Device:
 
     def AnnualWaterEngUsage(self, dailyVol,IncTemp):
          #   print "WH ENgy Test", dailyVol, IncTemp
-            return dailyVol* IncTemp * UnitBTU *  365/self.ef   #
+            return dailyVol * IncTemp * UnitBTU *  365/self.ef   #
 
     def AnnualHeatEngUsage_BTU(self):  #does not include auxiliary elec usage by NG furnace
          if self.ef == 0.0 or self.name == "":
