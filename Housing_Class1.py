@@ -25,7 +25,15 @@ def binomial_draw(p,n=1,N=1):
 def remove_device(devlist, thisdevice, devicename):
     for dd in devlist:
         if dd !=thisdevice and devicename in dd.name:
-            devlist.remove(dd)                         
+            devlist.remove(dd)  
+
+"""List of 16 dictionaries, each corresponding to a dictionary. Each dictionary maps
+a tuple of year, end-use, and hour to total energy usage for that hour"""
+
+hourly_energy = []
+for i in range(16):
+	hourly_energy += {}
+
 
 class HouseType:
     def __init__(self, type , HouseNum, cznum,size1, size2, vintage,devices, is_new = False):
@@ -51,7 +59,14 @@ class HouseType:
          #   self.versionId = 3
        # self.deviceCnt = deviceCnt
        
-   # def HHCountWithdevice(self, devicetype):           
+   # def HHCountWithdevice(self, devicetype):     
+
+   """Function which returns hourly energy usage """
+    def hourly_usage(year, end_use, hour):
+    	temp = (year, end_use, hour) #Tuple of variables
+    	return hourly_energy[self.cznum][temp]
+
+
     def HHenergyUsage_BTU(self):  #outputs heating and cooling energy in BTUs
        # num = self.deviceCnt
         esumheat = 0
