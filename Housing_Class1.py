@@ -31,7 +31,7 @@ def remove_device(devlist, thisdevice, devicename):
 
 
 """List of 16 dictionaries, each corresponding to a dictionary. Each dictionary maps
-a tuple of year, end-use, and hour to total energy usage for that hour"""
+a tuple of year and end-use to a list of total energy usage for all hours"""
 
 hourly_energy = []
 for i in range(16):
@@ -69,8 +69,8 @@ class HouseType:
 
 
     def hourly_usage(year, end_use, hour):
-        temp = (year, end_use, hour)  # Tuple of variables
-        return hourly_energy[self.cznum][temp]
+        temp = (year, end_use)  # Tuple of variables
+        return hourly_energy[self.cznum][temp][hour - 1]
 
 
     def HHenergyUsage_BTU(self):  # outputs heating and cooling energy in BTUs
