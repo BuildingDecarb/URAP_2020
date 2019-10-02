@@ -26,25 +26,16 @@ def binomial_draw(p, n=1, N=1):
 
 def remove_device(devlist, thisdevice, devicename):
     for dd in devlist:
-<<<<<<< HEAD
         if dd !=thisdevice and devicename in dd.name:
             devlist.remove(dd)  
-=======
-        if dd != thisdevice and devicename in dd.name:
-            devlist.remove(dd)
-
->>>>>>> 5ad3d41121cd1f2ba5d9e019e664757534dd398e
 
 """List of 16 dictionaries, each corresponding to a dictionary. Each dictionary maps
 a tuple of year, end-use, and hour to total energy usage for that hour"""
 
+
 hourly_energy = []
 for i in range(16):
-<<<<<<< HEAD
 	hourly_energy += {}
-=======
-    hourly_energy += {}
->>>>>>> 5ad3d41121cd1f2ba5d9e019e664757534dd398e
 
 
 class HouseType:
@@ -67,20 +58,21 @@ class HouseType:
         # elif pp == 1:
         #         self.versionId =2
         #         self.vintage = 1990
-<<<<<<< HEAD
         #elif self.vintage > 2007:
          #   self.versionId = 3
        # self.deviceCnt = deviceCnt
        
    # def HHCountWithdevice(self, devicetype):     
 
+
    """Function which returns hourly energy usage """
+   
+
     def hourly_usage(year, end_use, hour):
     	temp = (year, end_use, hour) #Tuple of variables
     	return hourly_energy[self.cznum][temp]
 
 
-   # def HHCountWithdevice(self, devicetype):
     def HHenergyUsage_BTU(self):  #outputs heating and cooling energy in BTUs
        # num = self.deviceCnt
         esumheat = 0
@@ -109,69 +101,6 @@ class HouseType:
                 esumheat += self.devices[k].AnnualHeatEngUsage_BTU()
          #       print "III",i, self.devices[k].name, esumcool, esumheat , "\n"
         return esumheat, esumcool  #esumheat contains NG blower electric usage
-
-    def HHenergyUsage_BTU_withoutNGBlower(self):  #outputs heating and cooling energy in BTUs
-       # num = self.deviceCnt
-        esumheat = 0
-        esumcool = 0
-        i = 0
-        num = len(self.devices)
-      #  NGswitch = 0
-        #print "TEST", num
-        for k in range(0,num):
-            if self.devices[k].name <> "Cooler" and  self.devices[k].name <> "Cond":
-                i +=1
-                esumheat += self.devices[k].AnnualHeatEngUsage_BTU() # this does not contain Blower usage
-              #  print "before", i, esumheat
-               # if self.devices[k].fuel.name == "NG" and NGswitch == 0:
-               #     NGswitch = 1
-               #     if "WH" not in self.devices[k].name:
-               #         esumheat += NG_AnnualElecUsage * kWh_BTU     #Adding blower usage
-               # print "I", i, self.devices[k].name, NG_AnnualElecUsage,esumheat, "\n"
-=======
-        # elif self.vintage > 2007:
-        #   self.versionId = 3
-    # self.deviceCnt = deviceCnt
-
-    # def HHCountWithdevice(self, devicetype):
-
-
-"""Function which returns hourly energy usage """
-
-
-def hourly_usage(year, end_use, hour):
-    temp = (year, end_use, hour)  # Tuple of variables
-    return hourly_energy[self.cznum][temp]
-
-
-def HHenergyUsage_BTU(self):  # outputs heating and cooling energy in BTUs
-    # num = self.deviceCnt
-    esumheat = 0
-    esumcool = 0
-    i = 0
-    num = len(self.devices)
-    NGswitch = 0
-    # print "TEST", num
-    for k in range(0, num):
-        if self.devices[k].name <> "Cooler" and self.devices[k].name <> "Cond":
-            i += 1
-            esumheat += self.devices[k].AnnualHeatEngUsage_BTU()  # this does not contain Blower usage
-            #  print "before", i, esumheat
-            if self.devices[k].fuel.name == "NG" and NGswitch == 0:
-                NGswitch = 1
-                if "WH" not in self.devices[k].name:
-                    esumheat += NG_AnnualElecUsage * kWh_BTU  # Adding blower usage
-        # print "I", i, self.devices[k].name, NG_AnnualElecUsage,esumheat, "\n"
-        if self.devices[k].name == "Cooler":
-            i += 1
-            esumcool += self.devices[k].AnnualCoolEngUsage_BTU()
-        # print "II", i, self.devices[k].name, esumcool , "\n"
-        if self.devices[k].name == "Cond":
-            i += 1
-            esumcool += self.devices[k].AnnualCoolEngUsage_BTU()
-            esumheat += self.devices[k].AnnualHeatEngUsage_BTU()
-    #       print "III",i, self.devices[k].name, esumcool, esumheat , "\n"
-    return esumheat, esumcool  # esumheat contains NG blower electric usage
 
 
 def HHenergyUsage_BTU_withoutNGBlower(self):  # outputs heating and cooling energy in BTUs
@@ -234,7 +163,6 @@ def HHenergyUsage_units(self):  # actually this should HHenergyUsage_fueltype,
                 eheat = self.devices[k].AnnualHeatEngUsage_BTU() / kWh_BTU
                 esumElec += eheat
             #   print "\n heating Energy",k,  self.devices[k].name, eheat
->>>>>>> 5ad3d41121cd1f2ba5d9e019e664757534dd398e
             if self.devices[k].name == "Cooler":
                 ecool = self.devices[k].AnnualCoolEngUsage_BTU() / kWh_BTU
                 esumElec += ecool
