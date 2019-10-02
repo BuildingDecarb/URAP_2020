@@ -26,7 +26,6 @@ def binomial_draw(p,n=1,N=1):
 
 def remove_device(devlist, thisdevice, devicename):
     for dd in devlist:
-<<<<<<< HEAD
         if dd !=thisdevice and devicename in dd.name:
             devlist.remove(dd)  
 
@@ -36,10 +35,6 @@ a tuple of year, end-use, and hour to total energy usage for that hour"""
 hourly_energy = []
 for i in range(16):
 	hourly_energy += {}
-=======
-        if dd != thisdevice and devicename in dd.name:
-            devlist.remove(dd)
->>>>>>> 4de1c9254c4cbb12b7b793c418e2afed10af5d73
 
 
 class HouseType:
@@ -65,7 +60,6 @@ class HouseType:
         #elif self.vintage > 2007:
          #   self.versionId = 3
        # self.deviceCnt = deviceCnt
-<<<<<<< HEAD
        
    # def HHCountWithdevice(self, devicetype):     
 
@@ -75,10 +69,7 @@ class HouseType:
     	return hourly_energy[self.cznum][temp]
 
 
-=======
-
    # def HHCountWithdevice(self, devicetype):
->>>>>>> 4de1c9254c4cbb12b7b793c418e2afed10af5d73
     def HHenergyUsage_BTU(self):  #outputs heating and cooling energy in BTUs
        # num = self.deviceCnt
         esumheat = 0
