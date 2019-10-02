@@ -42,27 +42,30 @@ Ref12 = Refrigerant(650, 1, 0.005, 0.1, 0.3)   #...
 Ref13 = Refrigerant(1, 1, 0.005, 0.1, 0.3)
 
 class Device:
-    def __init__(self, name,fuel, ef, ef_cooler, C, s1,s2,Rval0, Rval1, Rval2, vintage, lt, IC, OM, hasRefrigerant=False, refrigerant = Refrigerant()):
+    def __init__(self, name, fuel, housetype=null, ef, ef_cooler, C, outputTemp=125, s1, s2, Rval0, Rval1, Rval2, vintage, lt, IC, OM, hasRefrigerant=False, refrigerant=Refrigerant()):
         self.name = name
         self.fuel = fuel
-        self.ef = ef  #Efficiency
+        self.housetype = housetype #String indicating the type of house this device is for
+        self.ef = ef  # Efficiency
         self.ef_cooler = ef_cooler
-        self.C = C
-        self.HDD = cz[C,vintage].hdd
+        self.C = C  # Climate zone number
+        self.HDD = cz[C, vintage].hdd  # cz is a dict mapping climate zone number to climatezone object
         self.CDD = cz[C, vintage].cdd
-        self.s1 = s1
-        self.s2 = s2
-        self.Rval0 = Rval0
-        self.Rval1 = Rval1
-        self.Rval2 = Rval2
-        self.vintage = vintage  #year of installation..typically assumed happens beginning of a year
-     #   self.StockSize = StockSize  #Original Num is the number of waterheaters created in the 'vintage'year
-        self.lt = lt    #lifetime
-        self.IC = IC   #Initial Cost could be just Capex or could be Capex+initial cost to build infrastructure
-        self.OM = OM  #Operations and Maintenance
+        self.inputTemp = cz[C, vintage].inputTemp
+        self.outputTemp = outputTemp
+        self.s1 = s1  # surface area of wall
+        self.s2 = s2  # surface area of roof
+        self.Rval0 = Rval0  # insulation of window
+        self.Rval1 = Rval1  # insulation of walls
+        self.Rval2 = Rval2  # insulation of roof
+        self.vintage = vintage  # Year of installation...typically assumed happens beginning of a year
+        # self.StockSize = StockSize  #Original Num is the number of waterheaters created in the 'vintage'year
+        self.lt = lt  # Lifetime
+        self.IC = IC  # Initial Cost could be just Capex or could be Capex+initial cost to build infrastructure
+        self.OM = OM  # Operations and Maintenance
         self.hasRefrigerant = hasRefrigerant
         self.refrigerant = refrigerant
-        self.IncTemp = 75  #cz[C,vintage].IncTemp
+        self.IncTemp = self.outputTemp - self.inputTemp  #cz[C,vintage].IncTemp
         self.dailyVol = 50
 
     def weib0(self):   #before vintage year = 2005
@@ -124,7 +127,7 @@ class Device:
                p = (dead_thisyr)/(1-dead_yr)  #prob of death this year
             #   print "dead_prob1",yr,self.vintage, dead_thisyr,dead_yr, dead_yr1,p  #,dead_thisyr, 1-dead_yr  #/dead_yr
                return p  #
-    
+
     def dead_prob2(self,yr):
        # print "dead_prob Input", yr, self.name, self.vintage ,  self.lt,  UltimYr2
         if yr >= self.vintage + self.lt + UltimYr2 :                 #past life then dead
@@ -193,7 +196,7 @@ class Device:
 
     def AnnualWaterEngUsage(self, dailyVol,IncTemp):
          #   print "WH ENgy Test", dailyVol, IncTemp
-            return dailyVol* IncTemp * UnitBTU *  365/self.ef   #
+            return dailyVol * IncTemp * UnitBTU *  365/self.ef   #
 
     def AnnualHeatEngUsage_BTU(self):  #does not include auxiliary elec usage by NG furnace
          if self.ef == 0.0 or self.name == "":
@@ -259,7 +262,7 @@ class Device:
         #     print "\n"
              return totalCost
 
-    def AnnEmissions(self,yr, eng):  # eng contains NG blower usage; 
+    def AnnEmissions(self,yr, eng):  # eng contains NG blower usage;
                                       #result in tons  with  REFRIGERANT
             demand = eng             #in BTU  # also eng can be heating and/or cooling energy..
             ngEmis = 0
@@ -375,14 +378,14 @@ class Device:
         for I in range(yr, self.lt +yr):
              NPV = NPV + (self.OM[I-yr])/(1+DiscRate)**(I-yr+1)
         return NPV
-    
+
     def NPVCost_LT(self,yr, horizon):  #Without energy cost with capital cost fixed ahead
         NPV = self.IC
       #  print "START", NPV, yr, self.lt
         for I in range(yr, horizon +yr):
              NPV = NPV + (self.OM[I-yr])/(1+DiscRate)**(I-yr+1)
         return NPV
-    
+
     def NPVEngCost(self,yr,eng):  #Energy cost alone
         NPV = 0
         for I in range(yr, self.lt+yr):
@@ -559,7 +562,7 @@ class ERHeater0(Device, object):
 class ERHeater1(Device, object):
     def __init__(self, C, s1,s2,r0,r1,r2,yr, cost = ERIC, is_new = False):
         super(ERHeater1, self).__init__("ERH", Elec, E_EF,0, C, s1,s2,r0,r1,r2,  yr,  EL_LT, cost, OM_EL, False)
-       
+
     def AnnualHeatEngUsage_BTU(self):
         return super(ERHeater1, self).AnnualHeatEngUsage_BTU()
     def heaterOnlyFunction(self):
@@ -568,7 +571,7 @@ class ERHeater1(Device, object):
 class HP1(Device, object):
     def __init__(self, C, s1,s2,yr):
         super(HP1, self).__init__("HPH", Elec, HP1_EF, 0,C, s1,s2,r0,r1,r2,  yr,  HP_LT, HPIC1, OM_HP, True, Ref1)
-       
+
     def AnnualHeatEngUsage_BTU(self):
         return super(HP1, self).AnnualHeatEngUsage_BTU()
     def heaterOnlyFunction(self):
@@ -630,7 +633,7 @@ class Cond1(Device, object):  #assuming this is going to be all "ELectric" with 
         self.cost = cost
         self.is_retrofit = is_retrofit  # if the cond is replacing Elec ER or NG
         self.is_fuel_switch = is_fuel_switch  # if switching from NG to Elec
-     
+
         super(Cond1, self).__init__("Cond", Elec, HP1_EF,HP_AC1_EF, C, s1,s2,r0,r1,r2,  yr,  HP_LT, cost, OM_HPCond, True, Ref1)
         self.EF_Cool=self.ef
     def AnnualHeatEngUsage_BTU(self):
@@ -660,7 +663,7 @@ class Cond2(Device, object):  #assuming this is going to be all "ELectric" with 
         self.cost = cost
         self.is_retrofit = is_retrofit
         self.is_fuel_switch = is_fuel_switch
-        
+
         super(Cond2, self).__init__("Cond", Elec, HP2_EF,HP_AC2_EF, C, s1,s2, r0,r1,r2, yr,  HP_LT, cost, OM_HPCond, True, Ref2)
 
     def AnnualHeatEngUsage_BTU(self):
@@ -690,7 +693,7 @@ class Cond3(Device, object):  #assuming this is going to be all "ELectric" with 
         self.cost = cost
         self.is_retrofit = is_retrofit  # is the Cond replacing NG or Elec ER rather than another Cond
         self.is_fuel_switch = is_fuel_switch  # Gas to Elec?
-     
+
         super(Cond3, self).__init__("Cond", Elec, HP3_EF,HP_AC3_EF ,C, s1,s2,r0,r1,r2,  yr,  HP_LT, cost, OM_HPCond, True, Ref3)
 
     def AnnualHeatEngUsage_BTU(self):
@@ -727,8 +730,8 @@ def NGHeater(C, s1,s2, yr, cost, is_retrofit = False, is_new = False):
         r2 = R2future
         add_cost = NGNewHomeCost  # ## additional pipeline cost for new homes
    # print "NG TEST", s1,s2,yr, C, cz[C,yr].hdd, s1,s2,yr
-  
-    totalcost = cost + add_cost     
+
+    totalcost = cost + add_cost
     if yr < ThisYear:
         return NGHeater0(C, s1,s2, r0,r1,r2,yr, totalcost, is_retrofit, is_new)
     elif yr >=ThisYear and yr <= Phase11:
@@ -739,7 +742,7 @@ def NGHeater(C, s1,s2, yr, cost, is_retrofit = False, is_new = False):
         return  NGHeater3(  C, s1,s2, r0,r1,r2,yr,totalcost, is_retrofit, is_new)
 
 def ERHeater(C, s1,s2, yr,cost, is_new = False):
-    if is_new == False:   # existing shell R values 
+    if is_new == False:   # existing shell R values
         r0 = R0present
         r1 = R1present
         r2 = R2present
@@ -754,7 +757,7 @@ def ERHeater(C, s1,s2, yr,cost, is_new = False):
     if yr < ThisYear-2:
         return ERHeater0(C, s1,s2,r0,r1,r2, yr, totalcost, is_new)
     else:
-        return ERHeater1(  C, s1,s2, r0,r1,r2,yr,totalcost, is_new)        
+        return ERHeater1(  C, s1,s2, r0,r1,r2,yr,totalcost, is_new)
 
 def HP(C, s1,s2, yr):
     if yr <= Phase1:
@@ -770,13 +773,13 @@ def Cooler(C, s1,s2, yr, cost, is_new = False):   #is_new == True means new home
         r1 = R1present
         r2 = R2present
         add_cost =0
-    else:            # 
+    else:            #
         r0 = R0future
         r1 = R1future
         r2 = R2future
         add_cost = HomeUpgradeCost
-    totalcost = cost + add_cost  
-     
+    totalcost = cost + add_cost
+
     if yr < ThisYear :
         return Cooler0(C,s1,s2,r0,r1,r2,yr, totalcost, is_new)
     elif yr >= ThisYear and yr <= Phase11:
@@ -789,33 +792,33 @@ def Cooler(C, s1,s2, yr, cost, is_new = False):   #is_new == True means new home
 def Cond(C, s1, s2, yr, cost, is_retrofit=False, is_fuel_switch=False,  is_new = False):
     cost_fuel_switch = 0
     cost1 =0
-    if is_new == False: # not new home 
+    if is_new == False: # not new home
         r0 = R0present
         r1 = R1present
         r2 = R2present
-    else:               #new home....cost of HPConditioner 
+    else:               #new home....cost of HPConditioner
         r0 = R0future
         r1 = R1future
         r2 = R2future
     if is_retrofit ==True:  # ERH to HPCond for example
             cost1  = 0
     else:
-            cost1 = 0    
+            cost1 = 0
     if is_fuel_switch == True:
                 cost_fuel_switch = FuelSwitchCost
     else:
-                cost_fuel_switch = 0    
-  #  print "Cond R Values", r0,r1,r2             
+                cost_fuel_switch = 0
+  #  print "Cond R Values", r0,r1,r2
     if yr <=  Phase11:
-          totalCost = HPCapex1 + cost1+ cost_fuel_switch  
+          totalCost = HPCapex1 + cost1+ cost_fuel_switch
           return Cond1( C, s1,s2,r0,r1,r2,  yr, totalCost, is_retrofit, is_fuel_switch)
     elif yr > Phase11 and yr <= Phase2:
-          totalCost = HPCapex2 + cost1+ cost_fuel_switch  
+          totalCost = HPCapex2 + cost1+ cost_fuel_switch
           return Cond2(C, s1,s2,r0,r1,r2,  yr, totalCost, is_retrofit, is_fuel_switch)
     else:
-          totalCost = HPCapex3 + cost1+ cost_fuel_switch 
+          totalCost = HPCapex3 + cost1+ cost_fuel_switch
           return Cond3(C, s1,s2,r0,r1,r2,  yr, totalCost, is_retrofit, is_fuel_switch)
-    
+
 def HPWH(C,yr):
     if yr <= Phase1:
         return HPWH1( C,yr)
@@ -867,7 +870,7 @@ def ERWH(C,yr):
 #                plot.hold(True)
 #                p = 0.0
 #                dead1 = 1-d.deadsofar(years)  #actually live
-               
+
 #                a1.scatter(years , p,   s = 5, color = 'white')
 #                a2.scatter(years , dead,   s = 5, color = 'red')
 #            else:
@@ -880,9 +883,9 @@ def ERWH(C,yr):
 #            print "p",   years, d.vintage, d.death_prob(years), p, s
 
 #    cnt +=1
-# fig1.tight_layout()    
+# fig1.tight_layout()
 # plt.show()
-# fig2.tight_layout()    
+# fig2.tight_layout()
 # plt.show()
 ###yr = ThisYear
 #k = 3
