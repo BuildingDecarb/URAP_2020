@@ -65,397 +65,397 @@ class HouseType:
     # def HHCountWithdevice(self, devicetype):
 
 
-"""Function which returns hourly energy usage """
+    """Function which returns hourly energy usage """
 
 
-def hourly_usage(year, end_use, hour):
-    temp = (year, end_use, hour)  # Tuple of variables
-    return hourly_energy[self.cznum][temp]
+    def hourly_usage(year, end_use, hour):
+        temp = (year, end_use, hour)  # Tuple of variables
+        return hourly_energy[self.cznum][temp]
 
 
-def HHenergyUsage_BTU(self):  # outputs heating and cooling energy in BTUs
-    # num = self.deviceCnt
-    esumheat = 0
-    esumcool = 0
-    i = 0
-    num = len(self.devices)
-    NGswitch = 0
-    # print "TEST", num
-    for k in range(0, num):
-        if self.devices[k].name <> "Cooler" and self.devices[k].name <> "Cond":
-            i += 1
-            esumheat += self.devices[k].AnnualHeatEngUsage_BTU()  # this does not contain Blower usage
-            #  print "before", i, esumheat
-            if self.devices[k].fuel.name == "NG" and NGswitch == 0:
-                NGswitch = 1
-                if "WH" not in self.devices[k].name:
-                    esumheat += NG_AnnualElecUsage * kWh_BTU  # Adding blower usage
-        # print "I", i, self.devices[k].name, NG_AnnualElecUsage,esumheat, "\n"
-        if self.devices[k].name == "Cooler":
-            i += 1
-            esumcool += self.devices[k].AnnualCoolEngUsage_BTU()
-        # print "II", i, self.devices[k].name, esumcool , "\n"
-        if self.devices[k].name == "Cond":
-            i += 1
-            esumcool += self.devices[k].AnnualCoolEngUsage_BTU()
-            esumheat += self.devices[k].AnnualHeatEngUsage_BTU()
-    #       print "III",i, self.devices[k].name, esumcool, esumheat , "\n"
-    return esumheat, esumcool  # esumheat contains NG blower electric usage
-
-
-def HHenergyUsage_BTU_withoutNGBlower(self):  # outputs heating and cooling energy in BTUs
-    # num = self.deviceCnt
-    esumheat = 0
-    esumcool = 0
-    i = 0
-    num = len(self.devices)
-    #  NGswitch = 0
-    # print "TEST", num
-    for k in range(0, num):
-        if self.devices[k].name <> "Cooler" and self.devices[k].name <> "Cond":
-            i += 1
-            esumheat += self.devices[k].AnnualHeatEngUsage_BTU()  # this does not contain Blower usage
-        #  print "before", i, esumheat
-        # if self.devices[k].fuel.name == "NG" and NGswitch == 0:
-        #     NGswitch = 1
-        #     if "WH" not in self.devices[k].name:
-        #         esumheat += NG_AnnualElecUsage * kWh_BTU     #Adding blower usage
-        # print "I", i, self.devices[k].name, NG_AnnualElecUsage,esumheat, "\n"
-        if self.devices[k].name == "Cooler":
-            i += 1
-            esumcool += self.devices[k].AnnualCoolEngUsage_BTU()
-        # print "II", i, self.devices[k].name, esumcool , "\n"
-        if self.devices[k].name == "Cond":
-            i += 1
-            esumcool += self.devices[k].AnnualCoolEngUsage_BTU()
-            esumheat += self.devices[k].AnnualHeatEngUsage_BTU()
-    #       print "III",i, self.devices[k].name, esumcool, esumheat , "\n"
-    return esumheat, esumcool  # esumheat contains NG blower electric usage
-
-
-def HHenergyUsage_kWh(self):  # total energy usage in a house in KWh
-    eng = self.HHenergyUsage_BTU()
-    X = eng[0] / kWh_BTU + eng[1] / kWh_BTU
-    #  if (self.versionID == 1) return X*1.1:
-    return X
-
-
-def HHenergyUsage_units(self):  # actually this should HHenergyUsage_fueltype,
-    # outputs NG usage and Elec usage - the latter includes the electricity demand of NG Fan blower
-    num = len(self.devices)  # BUT NOW   output in kWh ..don't change it though...
-    esumNG = 0  # NG usage in kWh
-    esumElec = 0  # Elec usage in kWh
-    NGswitch = 0
-    #  print "cnt", num, devices[0].fuel.name, devices[1].fuel.name,devices[2].fuel.name
-    for k in range(0, num):
-        #  print "\n Name", self.devices[0].name
-        if self.devices[k].fuel.name == "NG" and NGswitch == 0:  # to avoid double counting NG appliances
-            NGswitch = 1
-            NGEng = self.HHenergyUsage_BTU()[0] / kWh_BTU
-            NGEng = NGEng - NG_AnnualElecUsage
-            esumNG += NGEng  # in kWh
-            if "WH" not in self.devices[k].name:  # only for NG space heaters
-                esumElec += NG_AnnualElecUsage
-        #  print "\n NG Eng",k, self.devices[k].name ,esumNG
-        elif self.devices[k].fuel.name == "Elec":
-
+    def HHenergyUsage_BTU(self):  # outputs heating and cooling energy in BTUs
+        # num = self.deviceCnt
+        esumheat = 0
+        esumcool = 0
+        i = 0
+        num = len(self.devices)
+        NGswitch = 0
+        # print "TEST", num
+        for k in range(0, num):
             if self.devices[k].name <> "Cooler" and self.devices[k].name <> "Cond":
-                eheat = self.devices[k].AnnualHeatEngUsage_BTU() / kWh_BTU
-                esumElec += eheat
-            #   print "\n heating Energy",k,  self.devices[k].name, eheat
+                i += 1
+                esumheat += self.devices[k].AnnualHeatEngUsage_BTU()  # this does not contain Blower usage
+                #  print "before", i, esumheat
+                if self.devices[k].fuel.name == "NG" and NGswitch == 0:
+                    NGswitch = 1
+                    if "WH" not in self.devices[k].name:
+                        esumheat += NG_AnnualElecUsage * kWh_BTU  # Adding blower usage
+            # print "I", i, self.devices[k].name, NG_AnnualElecUsage,esumheat, "\n"
             if self.devices[k].name == "Cooler":
-                ecool = self.devices[k].AnnualCoolEngUsage_BTU() / kWh_BTU
-                esumElec += ecool
-            #    print "\n Cooling Energy", k, self.devices[k].name,ecool
+                i += 1
+                esumcool += self.devices[k].AnnualCoolEngUsage_BTU()
+            # print "II", i, self.devices[k].name, esumcool , "\n"
             if self.devices[k].name == "Cond":
-                ecool = self.devices[k].AnnualCoolEngUsage_BTU() / kWh_BTU
-                eheat = self.devices[k].AnnualHeatEngUsage_BTU() / kWh_BTU
-                esumElec += ecool + eheat
-        #      print "\n Cond Energy", k,devices[k].name, ecool, eheat
-    return esumNG, esumElec
+                i += 1
+                esumcool += self.devices[k].AnnualCoolEngUsage_BTU()
+                esumheat += self.devices[k].AnnualHeatEngUsage_BTU()
+        #       print "III",i, self.devices[k].name, esumcool, esumheat , "\n"
+        return esumheat, esumcool  # esumheat contains NG blower electric usage
 
 
-def HHemissions(self, year):
-    num = len(self.devices)
-    # print "num of devices", num
-    emisng = 0
-    emiselec = 0
-    refemis = 0
-    for k in range(0, num):
-        if self.devices[k].fuel.name == "Elec":
-            if self.devices[k].hasRefrigerant == True:
-                refemis += self.devices[k].AvgRefLeaks(year)
-            # print "\Iterate through device", self.type, self.devices[k].name, refemis
-    #   print "\n ref yes/no", self.type,self.devices[k].fuel.name, self.devices[k].hasRefrigerant
-    NGeng = self.HHenergyUsage_units()[0]  # this is in kWh
-    Eleceng = self.HHenergyUsage_units()[1]
-    #  print "\n heat & cool eng", self.type,year, NGeng, Eleceng
-    emisng = (NGeng / Therm_kWh) * NGEmisYrly[year] / 1000
-    emiselec = Eleceng * ElecEmisYrly[year] / 1000
-    #     print "\n HH EMissions", year, self.type, NGeng,Eleceng, emisng, emiselec, refemis
-    return emisng, emiselec + refemis  # in metric tons
+    def HHenergyUsage_BTU_withoutNGBlower(self):  # outputs heating and cooling energy in BTUs
+        # num = self.deviceCnt
+        esumheat = 0
+        esumcool = 0
+        i = 0
+        num = len(self.devices)
+        #  NGswitch = 0
+        # print "TEST", num
+        for k in range(0, num):
+            if self.devices[k].name <> "Cooler" and self.devices[k].name <> "Cond":
+                i += 1
+                esumheat += self.devices[k].AnnualHeatEngUsage_BTU()  # this does not contain Blower usage
+            #  print "before", i, esumheat
+            # if self.devices[k].fuel.name == "NG" and NGswitch == 0:
+            #     NGswitch = 1
+            #     if "WH" not in self.devices[k].name:
+            #         esumheat += NG_AnnualElecUsage * kWh_BTU     #Adding blower usage
+            # print "I", i, self.devices[k].name, NG_AnnualElecUsage,esumheat, "\n"
+            if self.devices[k].name == "Cooler":
+                i += 1
+                esumcool += self.devices[k].AnnualCoolEngUsage_BTU()
+            # print "II", i, self.devices[k].name, esumcool , "\n"
+            if self.devices[k].name == "Cond":
+                i += 1
+                esumcool += self.devices[k].AnnualCoolEngUsage_BTU()
+                esumheat += self.devices[k].AnnualHeatEngUsage_BTU()
+        #       print "III",i, self.devices[k].name, esumcool, esumheat , "\n"
+        return esumheat, esumcool  # esumheat contains NG blower electric usage
 
 
-def HHemissions_refrig(self, year):
-    num = len(self.devices)
-    # print "num of devices", num
-    emisng = 0
-    emiselec = 0
-    refemis = 0
-    for k in range(0, num):
-        hdd = self.devices[k].HDD
-        cdd = self.devices[k].CDD
-        if self.devices[k].fuel.name == "Elec":
-            if self.devices[k].hasRefrigerant == True:
+    def HHenergyUsage_kWh(self):  # total energy usage in a house in KWh
+        eng = self.HHenergyUsage_BTU()
+        X = eng[0] / kWh_BTU + eng[1] / kWh_BTU
+        #  if (self.versionID == 1) return X*1.1:
+        return X
+
+
+    def HHenergyUsage_units(self):  # actually this should HHenergyUsage_fueltype,
+        # outputs NG usage and Elec usage - the latter includes the electricity demand of NG Fan blower
+        num = len(self.devices)  # BUT NOW   output in kWh ..don't change it though...
+        esumNG = 0  # NG usage in kWh
+        esumElec = 0  # Elec usage in kWh
+        NGswitch = 0
+        #  print "cnt", num, devices[0].fuel.name, devices[1].fuel.name,devices[2].fuel.name
+        for k in range(0, num):
+            #  print "\n Name", self.devices[0].name
+            if self.devices[k].fuel.name == "NG" and NGswitch == 0:  # to avoid double counting NG appliances
+                NGswitch = 1
+                NGEng = self.HHenergyUsage_BTU()[0] / kWh_BTU
+                NGEng = NGEng - NG_AnnualElecUsage
+                esumNG += NGEng  # in kWh
+                if "WH" not in self.devices[k].name:  # only for NG space heaters
+                    esumElec += NG_AnnualElecUsage
+            #  print "\n NG Eng",k, self.devices[k].name ,esumNG
+            elif self.devices[k].fuel.name == "Elec":
+
+                if self.devices[k].name <> "Cooler" and self.devices[k].name <> "Cond":
+                    eheat = self.devices[k].AnnualHeatEngUsage_BTU() / kWh_BTU
+                    esumElec += eheat
+                #   print "\n heating Energy",k,  self.devices[k].name, eheat
                 if self.devices[k].name == "Cooler":
-                    refemis += self.devices[k].AvgRefLeaks(year)  # * cdd/(hdd+cdd)
+                    ecool = self.devices[k].AnnualCoolEngUsage_BTU() / kWh_BTU
+                    esumElec += ecool
+                #    print "\n Cooling Energy", k, self.devices[k].name,ecool
                 if self.devices[k].name == "Cond":
-                    refemis += self.devices[k].AvgRefLeaks(year)
-            # print "\Iterate through device", self.type, self.devices[k].name, refemis
-    #   print "\n ref yes/no", self.type,self.devices[k].fuel.name, self.devices[k].hasRefrigerant
-    NGeng = self.HHenergyUsage_units()[0]  # this is in kWh
-    Eleceng = self.HHenergyUsage_units()[1]
-    #  print "\n heat & cool eng", self.type,year, NGeng, Eleceng
-    emisng = (NGeng / Therm_kWh) * NGEmisYrly[year] / 1000
-    emiselec = Eleceng * ElecEmisYrly[year] / 1000
-    # print "\n HH EMissions", year, self.type, NGeng,Eleceng, emisng, emiselec, refemis, "..", ElecEmisYrly[year], NGEmisYrly[year]
-    return emisng, emiselec, refemis
+                    ecool = self.devices[k].AnnualCoolEngUsage_BTU() / kWh_BTU
+                    eheat = self.devices[k].AnnualHeatEngUsage_BTU() / kWh_BTU
+                    esumElec += ecool + eheat
+            #      print "\n Cond Energy", k,devices[k].name, ecool, eheat
+        return esumNG, esumElec
 
 
-def HHemissions_heatcool(self, year):
-    num = len(self.devices)
-    emisheat = 0
-    emiscool = 0
-
-    for k in range(0, num):
-        hdd = self.devices[k].HDD
-        cdd = self.devices[k].CDD
-        if self.devices[k].name <> "Cooler" and self.devices[k].name <> "Cond":
-            heateng = self.devices[k].AnnualHeatEngUsage_BTU()  # NO NG BLOWER Usage
+    def HHemissions(self, year):
+        num = len(self.devices)
+        # print "num of devices", num
+        emisng = 0
+        emiselec = 0
+        refemis = 0
+        for k in range(0, num):
             if self.devices[k].fuel.name == "Elec":
-                emisheat += (heateng / kWh_BTU) * ElecEmisYrly[year] / 1000
                 if self.devices[k].hasRefrigerant == True:
-                    emisheat += self.devices[k].AvgRefLeaks(year)
-            # print "before",self.type, i, emisheat
-            if self.devices[k].fuel.name == "NG":
-                emisheat += (heateng / Therm_BTU) * NGEmisYrly[year] / 1000
-                if "WH" not in self.devices[k].name:
-                    emisheat += (NG_AnnualElecUsage) * ElecEmisYrly[year] / 1000  # ADDING BLOWER USAGE
-        #     print "I",self.type, i, emisheat, "\n"
-        if self.devices[k].name == "Cooler":
-            cooleng = self.devices[k].AnnualCoolEngUsage_BTU() / kWh_BTU
-            emiscool += cooleng * ElecEmisYrly[year] / 1000
-            if self.devices[k].hasRefrigerant == True:
-                emiscool += self.devices[k].AvgRefLeaks(year) * cdd / (hdd + cdd)
-        #     print "II",self.type, i, emiscool , self.devices[k].AvgRefLeaks(year) ,"\n"
-        if self.devices[k].name == "Cond":
-            heateng = self.devices[k].AnnualHeatEngUsage_BTU() / kWh_BTU
-            cooleng = self.devices[k].AnnualCoolEngUsage_BTU() / kWh_BTU
+                    refemis += self.devices[k].AvgRefLeaks(year)
+                # print "\Iterate through device", self.type, self.devices[k].name, refemis
+        #   print "\n ref yes/no", self.type,self.devices[k].fuel.name, self.devices[k].hasRefrigerant
+        NGeng = self.HHenergyUsage_units()[0]  # this is in kWh
+        Eleceng = self.HHenergyUsage_units()[1]
+        #  print "\n heat & cool eng", self.type,year, NGeng, Eleceng
+        emisng = (NGeng / Therm_kWh) * NGEmisYrly[year] / 1000
+        emiselec = Eleceng * ElecEmisYrly[year] / 1000
+        #     print "\n HH EMissions", year, self.type, NGeng,Eleceng, emisng, emiselec, refemis
+        return emisng, emiselec + refemis  # in metric tons
+
+
+    def HHemissions_refrig(self, year):
+        num = len(self.devices)
+        # print "num of devices", num
+        emisng = 0
+        emiselec = 0
+        refemis = 0
+        for k in range(0, num):
             hdd = self.devices[k].HDD
             cdd = self.devices[k].CDD
-            emisheat += heateng * ElecEmisYrly[year] / 1000 + self.devices[k].AvgRefLeaks(year) * (hdd / (hdd + cdd))
-            emiscool += cooleng * ElecEmisYrly[year] / 1000 + self.devices[k].AvgRefLeaks(year) * (cdd / (hdd + cdd))
-            print
-            "III", self.type, i, self.devices[k].HDD, self.devices[k].CDD, emisheat, emiscool, self.devices[
-                k].AvgRefLeaks(year)
-    return emisheat, emiscool
+            if self.devices[k].fuel.name == "Elec":
+                if self.devices[k].hasRefrigerant == True:
+                    if self.devices[k].name == "Cooler":
+                        refemis += self.devices[k].AvgRefLeaks(year)  # * cdd/(hdd+cdd)
+                    if self.devices[k].name == "Cond":
+                        refemis += self.devices[k].AvgRefLeaks(year)
+                # print "\Iterate through device", self.type, self.devices[k].name, refemis
+        #   print "\n ref yes/no", self.type,self.devices[k].fuel.name, self.devices[k].hasRefrigerant
+        NGeng = self.HHenergyUsage_units()[0]  # this is in kWh
+        Eleceng = self.HHenergyUsage_units()[1]
+        #  print "\n heat & cool eng", self.type,year, NGeng, Eleceng
+        emisng = (NGeng / Therm_kWh) * NGEmisYrly[year] / 1000
+        emiselec = Eleceng * ElecEmisYrly[year] / 1000
+        # print "\n HH EMissions", year, self.type, NGeng,Eleceng, emisng, emiselec, refemis, "..", ElecEmisYrly[year], NGEmisYrly[year]
+        return emisng, emiselec, refemis
 
 
-def HHEnergyCost(self, year):
-    eng_units = self.HHenergyUsage_units()
-    ngdemand = eng_units[0] / Therm_kWh
-    elecdemand = eng_units[1]
-    #  print "HH Energy units", self.type, year, ngdemand, elecdemand
-    ngCost = ngdemand * NGCostYrly[year]
-    elecCost = elecdemand * ElecCostYrly[year]
-    # print "Unit Cost", self.type, year, ngdemand, elecdemand,NGCostYrly[year], ElecCostYrly[year],ngCost, elecCost
-    return ngCost, elecCost
+    def HHemissions_heatcool(self, year):
+        num = len(self.devices)
+        emisheat = 0
+        emiscool = 0
+
+        for k in range(0, num):
+            hdd = self.devices[k].HDD
+            cdd = self.devices[k].CDD
+            if self.devices[k].name <> "Cooler" and self.devices[k].name <> "Cond":
+                heateng = self.devices[k].AnnualHeatEngUsage_BTU()  # NO NG BLOWER Usage
+                if self.devices[k].fuel.name == "Elec":
+                    emisheat += (heateng / kWh_BTU) * ElecEmisYrly[year] / 1000
+                    if self.devices[k].hasRefrigerant == True:
+                        emisheat += self.devices[k].AvgRefLeaks(year)
+                # print "before",self.type, i, emisheat
+                if self.devices[k].fuel.name == "NG":
+                    emisheat += (heateng / Therm_BTU) * NGEmisYrly[year] / 1000
+                    if "WH" not in self.devices[k].name:
+                        emisheat += (NG_AnnualElecUsage) * ElecEmisYrly[year] / 1000  # ADDING BLOWER USAGE
+            #     print "I",self.type, i, emisheat, "\n"
+            if self.devices[k].name == "Cooler":
+                cooleng = self.devices[k].AnnualCoolEngUsage_BTU() / kWh_BTU
+                emiscool += cooleng * ElecEmisYrly[year] / 1000
+                if self.devices[k].hasRefrigerant == True:
+                    emiscool += self.devices[k].AvgRefLeaks(year) * cdd / (hdd + cdd)
+            #     print "II",self.type, i, emiscool , self.devices[k].AvgRefLeaks(year) ,"\n"
+            if self.devices[k].name == "Cond":
+                heateng = self.devices[k].AnnualHeatEngUsage_BTU() / kWh_BTU
+                cooleng = self.devices[k].AnnualCoolEngUsage_BTU() / kWh_BTU
+                hdd = self.devices[k].HDD
+                cdd = self.devices[k].CDD
+                emisheat += heateng * ElecEmisYrly[year] / 1000 + self.devices[k].AvgRefLeaks(year) * (hdd / (hdd + cdd))
+                emiscool += cooleng * ElecEmisYrly[year] / 1000 + self.devices[k].AvgRefLeaks(year) * (cdd / (hdd + cdd))
+                print
+                "III", self.type, i, self.devices[k].HDD, self.devices[k].CDD, emisheat, emiscool, self.devices[
+                    k].AvgRefLeaks(year)
+        return emisheat, emiscool
 
 
-def HHTotalEnergyCost(self, year):
-    #      print "Total Eng Cost", year, self.type, self.HHEnergyCost(year)[0],  self.HHEnergyCost(year)[1]
-    return self.HHEnergyCost(year)[0] + self.HHEnergyCost(year)[1]
+    def HHEnergyCost(self, year):
+        eng_units = self.HHenergyUsage_units()
+        ngdemand = eng_units[0] / Therm_kWh
+        elecdemand = eng_units[1]
+        #  print "HH Energy units", self.type, year, ngdemand, elecdemand
+        ngCost = ngdemand * NGCostYrly[year]
+        elecCost = elecdemand * ElecCostYrly[year]
+        # print "Unit Cost", self.type, year, ngdemand, elecdemand,NGCostYrly[year], ElecCostYrly[year],ngCost, elecCost
+        return ngCost, elecCost
 
 
-def HHTotalEmissions(self, year):
-    #    print "Total Emis", year,self.type, self.HHemissions(year)[0] + self.HHemissions(year)[1]
-    return (self.HHemissions(year)[0] + self.HHemissions(year)[1])
+    def HHTotalEnergyCost(self, year):
+        #      print "Total Eng Cost", year, self.type, self.HHEnergyCost(year)[0],  self.HHEnergyCost(year)[1]
+        return self.HHEnergyCost(year)[0] + self.HHEnergyCost(year)[1]
 
 
-def HHDevicesCapCost(self, year):
-    dev = self.devices
-    num = len(dev)
-    cost = 0
-    for k in range(0, num):
-        cost += self.devices[k].IC
-    #  print "dev cost",num, self.devices[k].name, self.devices[k].IC
-    return cost
+    def HHTotalEmissions(self, year):
+        #    print "Total Emis", year,self.type, self.HHemissions(year)[0] + self.HHemissions(year)[1]
+        return (self.HHemissions(year)[0] + self.HHemissions(year)[1])
 
 
-def HHNPVDevicesCost(self, year):  # NPV of Capital Cost and OM Cost through the life of Devices
-    dev = self.devices
-    num = len(dev)
-    hhnpv = 0
-    for k in range(0, num):
-        #  print "\n test devices Cost", year, self.type, self.devices[k].name, self.devices[k].lt
-        cost = self.devices[k].NPVCost(year)
-        # print "NPV Cost", cost
-        hhnpv += cost
-    # print year, self.type, hhnpv
-    return hhnpv
+    def HHDevicesCapCost(self, year):
+        dev = self.devices
+        num = len(dev)
+        cost = 0
+        for k in range(0, num):
+            cost += self.devices[k].IC
+        #  print "dev cost",num, self.devices[k].name, self.devices[k].IC
+        return cost
 
 
-def HHNPVEnergyCost(self, year):
-    dev = self.devices
-    num = len(dev)
-    minLT = 0
-    engcost = 0
-    minLT = 0
-    for k in range(0, num):
-        minLT = min(self.devices[0].lt, self.devices[k].lt)
-    # print "MIN LT", self.type, self.devices[k].name,minLT, self.devices[k].lt
-    for k in range(year, year + minLT + 1):
-        cost = self.HHTotalEnergyCost(k)
-        engcost += cost / (1 + DiscRate) ** (k - year + 1)
-    #   print year, self.type, cost
-    return engcost
+    def HHNPVDevicesCost(self, year):  # NPV of Capital Cost and OM Cost through the life of Devices
+        dev = self.devices
+        num = len(dev)
+        hhnpv = 0
+        for k in range(0, num):
+            #  print "\n test devices Cost", year, self.type, self.devices[k].name, self.devices[k].lt
+            cost = self.devices[k].NPVCost(year)
+            # print "NPV Cost", cost
+            hhnpv += cost
+        # print year, self.type, hhnpv
+        return hhnpv
 
 
-def HHNPVEmissionsCost(self, year, UnitCarbonCost=0):  # at CCost = $1, this is just a NPV of emissions
-    CCost = UnitCarbonCost
-    dev = self.devices
-    num = len(dev)
-    minLT = self.devices[0].lt
-    hhemisCost = 0
-    for k in range(0, num):
-        minLT = min(self.devices[k].lt, self.devices[k].lt)
-    # print "min LT", self.type, self.devices[k].name, minLT
-    for time in range(1, minLT + 1):
-        years = year + time
-        hhemis = self.HHTotalEmissions(years)
-        hhemisCost += CCost * hhemis / (1 + DiscRate) ** (time + 1)
-    #     print "HH Emissions", year, self.type, hhemis, hhemisCost
-    return hhemisCost
+    def HHNPVEnergyCost(self, year):
+        dev = self.devices
+        num = len(dev)
+        minLT = 0
+        engcost = 0
+        minLT = 0
+        for k in range(0, num):
+            minLT = min(self.devices[0].lt, self.devices[k].lt)
+        # print "MIN LT", self.type, self.devices[k].name,minLT, self.devices[k].lt
+        for k in range(year, year + minLT + 1):
+            cost = self.HHTotalEnergyCost(k)
+            engcost += cost / (1 + DiscRate) ** (k - year + 1)
+        #   print year, self.type, cost
+        return engcost
 
 
-def HHNPVDevicesCost(self, year):  # NPV of Capital Cost and OM Cost through the life of Devices
-    dev = self.devices
-    num = len(dev)
-    hhnpv = 0
-    for k in range(0, num):
-        # print "\n test devices Cost", year, self.type, self.devices[k].name, self.devices[k].lt
-        cost = self.devices[k].NPVCost(year)
-        #   print "NPV Cost", cost
-        hhnpv += cost
-    # print year, self.type, hhnpv
-    return hhnpv
+    def HHNPVEmissionsCost(self, year, UnitCarbonCost=0):  # at CCost = $1, this is just a NPV of emissions
+        CCost = UnitCarbonCost
+        dev = self.devices
+        num = len(dev)
+        minLT = self.devices[0].lt
+        hhemisCost = 0
+        for k in range(0, num):
+            minLT = min(self.devices[k].lt, self.devices[k].lt)
+        # print "min LT", self.type, self.devices[k].name, minLT
+        for time in range(1, minLT + 1):
+            years = year + time
+            hhemis = self.HHTotalEmissions(years)
+            hhemisCost += CCost * hhemis / (1 + DiscRate) ** (time + 1)
+        #     print "HH Emissions", year, self.type, hhemis, hhemisCost
+        return hhemisCost
 
 
-# =================================================================================================================
-def HHNPVEnergyCost_LT(self, year, horizon):
-    dev = self.devices
-    num = len(dev)
-    minLT = 0
-    engcost = 0
-    minLT = horizon
-
-    # print "MIN LT", self.type, self.devices[k].name,minLT, self.devices[k].lt
-    for k in range(year, year + minLT):
-        cost = self.HHTotalEnergyCost(k)
-        engcost += cost / (1 + DiscRate) ** (k - year)
-    # print year, self.type, cost
-    #  print year, self.devices[0].name, engcost
-    return engcost
+    def HHNPVDevicesCost(self, year):  # NPV of Capital Cost and OM Cost through the life of Devices
+        dev = self.devices
+        num = len(dev)
+        hhnpv = 0
+        for k in range(0, num):
+            # print "\n test devices Cost", year, self.type, self.devices[k].name, self.devices[k].lt
+            cost = self.devices[k].NPVCost(year)
+            #   print "NPV Cost", cost
+            hhnpv += cost
+        # print year, self.type, hhnpv
+        return hhnpv
 
 
-def HHNPVEmissionsCost_LT(self, year, horizon, UnitCarbonCost=0):  # at CCost = $1, this is just a NPV of emissions
-    CCost = UnitCarbonCost
-    dev = self.devices
-    num = len(dev)
-    minLT = horizon
-    hhemisCost = 0
+    # =================================================================================================================
+    def HHNPVEnergyCost_LT(self, year, horizon):
+        dev = self.devices
+        num = len(dev)
+        minLT = 0
+        engcost = 0
+        minLT = horizon
 
-    # print "min LT", self.type, self.devices[k].name, minLT
-    for time in range(1, minLT + 1):
-        years = year + time
-        hhemis = self.HHTotalEmissions(years)
-        hhemisCost += CCost * hhemis / (1 + DiscRate) ** (time)
-    #     print "HH Emissions", year, self.type, hhemis, hhemisCost
-    return hhemisCost
-
-
-# ============================================================================
-
-def HHpayback(self, Hx, yr, CC):  # SF3 = Hx and SF1= self two appliances vs Conditioner...specifically
-    N = 1
-    maxN = 22  #
-    dev1 = self.devices
-    dev2 = Hx.devices
-    num1 = len(dev1)  # self
-    num2 = len(dev2)  # SF3
-    Capcost1 = self.HHDevicesCapCost(yr)
-    Capcost2 = Hx.HHDevicesCapCost(yr)
-    delta_cost = Capcost2 - Capcost1
-    eng1 = self.HHTotalEnergyCost(yr)  # Assuming O&M are the same for both...not true..but
-    eng2 = Hx.HHTotalEnergyCost(yr)
-    emis1 = self.HHTotalEmissions(yr)
-    emis2 = Hx.HHTotalEmissions(yr)
-    deng = eng2 - eng1
-    demis = CC * (emis2 - emis1)
-    delta = (deng + demis) / (1 + DiscRate) ** N
-    cnt = 0
-    #    print "cnt 0...",cnt, N, yr, CC,  delta_cost, deng, demis,delta
-    if round(delta_cost + delta, 0) <= 0:
-        return 0
-    elif round(delta_cost + delta, 0) > 0:  # App2 is more expensive but app2 energy cheaper
-        while N <= maxN and round(delta_cost + delta, 0) > 0:
-            cnt += 1
-            N = N + 1
-            deng = Hx.HHTotalEnergyCost(yr + N) - self.HHTotalEnergyCost(yr + N)
-            demis = CC * (Hx.HHTotalEmissions(yr + N) - self.HHTotalEmissions(yr + N))
-            diff = (deng + demis)
-            delta += diff / (1 + DiscRate) ** (N)
-        return N
+        # print "MIN LT", self.type, self.devices[k].name,minLT, self.devices[k].lt
+        for k in range(year, year + minLT):
+            cost = self.HHTotalEnergyCost(k)
+            engcost += cost / (1 + DiscRate) ** (k - year)
+        # print year, self.type, cost
+        #  print year, self.devices[0].name, engcost
+        return engcost
 
 
-def HHCCBreakEven(self, Hx, yr, TimeHorizon=15):  # breakeven carbon cost of Hx with self.
-    #  print "\n Calling X1"
-    CC = 0
-    delta_cost = Hx.HHDevicesCapCost(yr) - self.HHDevicesCapCost(yr)
-    engcost1 = 0
-    engcost2 = 0
-    emis1 = 0
-    emis2 = 0
-    for k in range(yr, yr + TimeHorizon + 1):
-        cost1 = self.HHTotalEnergyCost(k)
-        engcost1 += cost1 / (1 + DiscRate) ** (k - yr)
-        hhemis1 = self.HHTotalEmissions(k)
-        emis1 += hhemis1 / (1 + DiscRate) ** (k - yr)
+    def HHNPVEmissionsCost_LT(self, year, horizon, UnitCarbonCost=0):  # at CCost = $1, this is just a NPV of emissions
+        CCost = UnitCarbonCost
+        dev = self.devices
+        num = len(dev)
+        minLT = horizon
+        hhemisCost = 0
 
-        cost2 = Hx.HHTotalEnergyCost(k)
-        engcost2 += cost2 / (1 + DiscRate) ** (k - yr)
-        hhemis2 = Hx.HHTotalEmissions(k)
-        emis2 += hhemis2 / (1 + DiscRate) ** (k - yr)
+        # print "min LT", self.type, self.devices[k].name, minLT
+        for time in range(1, minLT + 1):
+            years = year + time
+            hhemis = self.HHTotalEmissions(years)
+            hhemisCost += CCost * hhemis / (1 + DiscRate) ** (time)
+        #     print "HH Emissions", year, self.type, hhemis, hhemisCost
+        return hhemisCost
 
-        delta_eng = engcost2 - engcost1
-    diff_emis = emis2 - emis1
-    delta_emis = CC * diff_emis
 
-    #  print "breakeven CC..", CC, delta_cost , engcost1, engcost2, emis1, emis2
-    if round(delta_cost + delta_eng + delta_emis, 0) <= 0:
+    # ============================================================================
+
+    def HHpayback(self, Hx, yr, CC):  # SF3 = Hx and SF1= self two appliances vs Conditioner...specifically
+        N = 1
+        maxN = 22  #
+        dev1 = self.devices
+        dev2 = Hx.devices
+        num1 = len(dev1)  # self
+        num2 = len(dev2)  # SF3
+        Capcost1 = self.HHDevicesCapCost(yr)
+        Capcost2 = Hx.HHDevicesCapCost(yr)
+        delta_cost = Capcost2 - Capcost1
+        eng1 = self.HHTotalEnergyCost(yr)  # Assuming O&M are the same for both...not true..but
+        eng2 = Hx.HHTotalEnergyCost(yr)
+        emis1 = self.HHTotalEmissions(yr)
+        emis2 = Hx.HHTotalEmissions(yr)
+        deng = eng2 - eng1
+        demis = CC * (emis2 - emis1)
+        delta = (deng + demis) / (1 + DiscRate) ** N
+        cnt = 0
+        #    print "cnt 0...",cnt, N, yr, CC,  delta_cost, deng, demis,delta
+        if round(delta_cost + delta, 0) <= 0:
+            return 0
+        elif round(delta_cost + delta, 0) > 0:  # App2 is more expensive but app2 energy cheaper
+            while N <= maxN and round(delta_cost + delta, 0) > 0:
+                cnt += 1
+                N = N + 1
+                deng = Hx.HHTotalEnergyCost(yr + N) - self.HHTotalEnergyCost(yr + N)
+                demis = CC * (Hx.HHTotalEmissions(yr + N) - self.HHTotalEmissions(yr + N))
+                diff = (deng + demis)
+                delta += diff / (1 + DiscRate) ** (N)
+            return N
+
+
+    def HHCCBreakEven(self, Hx, yr, TimeHorizon=15):  # breakeven carbon cost of Hx with self.
+        #  print "\n Calling X1"
+        CC = 0
+        delta_cost = Hx.HHDevicesCapCost(yr) - self.HHDevicesCapCost(yr)
+        engcost1 = 0
+        engcost2 = 0
+        emis1 = 0
+        emis2 = 0
+        for k in range(yr, yr + TimeHorizon + 1):
+            cost1 = self.HHTotalEnergyCost(k)
+            engcost1 += cost1 / (1 + DiscRate) ** (k - yr)
+            hhemis1 = self.HHTotalEmissions(k)
+            emis1 += hhemis1 / (1 + DiscRate) ** (k - yr)
+
+            cost2 = Hx.HHTotalEnergyCost(k)
+            engcost2 += cost2 / (1 + DiscRate) ** (k - yr)
+            hhemis2 = Hx.HHTotalEmissions(k)
+            emis2 += hhemis2 / (1 + DiscRate) ** (k - yr)
+
+            delta_eng = engcost2 - engcost1
+        diff_emis = emis2 - emis1
+        delta_emis = CC * diff_emis
+
+        #  print "breakeven CC..", CC, delta_cost , engcost1, engcost2, emis1, emis2
+        if round(delta_cost + delta_eng + delta_emis, 0) <= 0:
+            return CC
+        elif round(delta_cost + delta_eng + delta_emis, 0) > 0:
+
+            while round(delta_cost + delta_eng + delta_emis, 0) > 0 and CC <= 2000:
+                CC += 25
+                delta_emis = CC * diff_emis
+            #  print "breakeven CC: ", yr,k, self.type, Hx.type, CC, delta_cost, delta_eng, emis2- emis1
         return CC
-    elif round(delta_cost + delta_eng + delta_emis, 0) > 0:
-
-        while round(delta_cost + delta_eng + delta_emis, 0) > 0 and CC <= 2000:
-            CC += 25
-            delta_emis = CC * diff_emis
-        #  print "breakeven CC: ", yr,k, self.type, Hx.type, CC, delta_cost, delta_eng, emis2- emis1
-    return CC
 
 
-def HHLCC(self, year, CarbonCost=0):  # assuming time horizon is MinLifeTime of all appliances
-    lcc = self.HHNPVDevicesCost(year) + self.HHNPVEnergyCost(year) + self.HHNPVEmissionsCost(year, CarbonCost)
-    return lcc
+    def HHLCC(self, year, CarbonCost=0):  # assuming time horizon is MinLifeTime of all appliances
+        lcc = self.HHNPVDevicesCost(year) + self.HHNPVEnergyCost(year) + self.HHNPVEmissionsCost(year, CarbonCost)
+        return lcc
 
 
 class SFHomes(HouseType, object):
