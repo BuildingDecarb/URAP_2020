@@ -1,4 +1,5 @@
 from calendar import monthrange
+import pandas as pd
 
 C1_arcata = pd.read_csv("PVCellData/1_Arcata.csv", skiprows = 17)
 C1_eureka = pd.read_csv("PVCellData/1_Eureka.csv", skiprows = 17)
