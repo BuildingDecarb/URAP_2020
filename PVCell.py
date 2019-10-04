@@ -21,15 +21,24 @@ class PVCell:
         self.peakYearly = demandData.peakYearlyDemand(C)
         self.averageYearlyDemand = demandData.yearlyDemand(C)
 
-    #Get area needed for sufficient solar panels to meet demand.
+    #Get area needed for sufficient solar panels to meet a yearly demand.
     def getArea(self):
-        demand = self.getDemand()
+        demand = self.getYearlyPeakDemand()
+        solar_output_per_cell = self.getKWH()   # TODO: 175.2 kWh/sm/year?
+        area_needed = (demand / solar_output_per_cell) * 10
+        return area_needed
+
+    
 
     #Get demand based on climate.
     def getDemand(self):
         demandData.climateDict.get(self.C)
         
+    def getDailyPeakDemand(self):
+        return demandData.dailyPeakDemand(self.C)
 
+    def getYearlyPeakDemand(self):
+        return demandData.yearlyDemand(self.C)
         
         
 
@@ -37,9 +46,11 @@ class PVCell:
 
 
 
-        
 
 
     def getKWH(self):
+        
+
+    
         
     
