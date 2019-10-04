@@ -1,4 +1,5 @@
 from calendar import monthrange
+import pandas as pd
 
 C1_arcata = pd.read_csv("PVCellData/1_Arcata.csv", skiprows = 17)
 C1_eureka = pd.read_csv("PVCellData/1_Eureka.csv", skiprows = 17)
@@ -98,9 +99,16 @@ def monthlyPeakDemand(climate):
                 peakMonthlyDemand = monthlyDemand
     return (peakMonth, peakMonthlyDemand / 1000)
 
+def peakYearlyDemand(climate):
+    cities = climateDict.get(climate)
+    sum = 0
+    for city in cities:
+        cityDemand = city[city['Month'] == 'Totals']['AC System Output (W)'][8760]
+        if (sum < cityDemand):
+            sum = cityDemand
+    return sum / 1000
 
-
-def yearlyDemand(climate):
+def averageYearlyDemand(climate):
     cities = climateDict.get(climate)
     sum = 0
     for city in cities:
