@@ -1,3 +1,19 @@
+import csv
+
+"""For the code below, we assume a particular file.
+   In reality, the file will change based on the
+   climate zone and year"""
+
+def update_dictionary(cznum, year, end_use):
+	with open('pge-res-PGSA-res_misc-noKW-Care-0.4_0.5.csv') as csvfile:
+	readCSV = csv.reader(csvfile, delimiter = ',')
+	curr_dict = hourly_energy[cznum];
+	curr_dict[(year, end_use)] = []
+	for row in readCSV:
+		total_energy = row[5]
+		curr_dict[(year, end_use)].append(total_energy)
+
+
 months_to_hours = {}
 days_in_months = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 months = {"Jan": 0,
