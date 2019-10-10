@@ -47,8 +47,8 @@ Ref13 = Refrigerant(1, 1, 0.005, 0.1, 0.3)
 
 
 class Device:
-    def __init__(self, name, fuel, housetype=null, ef, ef_cooler, C, outputTemp=125, s1, s2, Rval0, Rval1, Rval2,
-                 vintage, lt, IC, OM, hasRefrigerant=False, refrigerant=Refrigerant()):
+    def __init__(self, name, fuel, ef, ef_cooler, C, s1, s2, Rval0, Rval1, Rval2, vintage, lt, IC, OM,
+                 housetype=None, outputTemp=125, hasRefrigerant=False, refrigerant=Refrigerant()):
         self.name = name
         self.fuel = fuel
         self.housetype = housetype  # String indicating the type of house this device is for

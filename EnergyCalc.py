@@ -1,6 +1,10 @@
 import csv
+import sys
 
-months_to_hours = {}
+hourly_energy = []
+for i in range(16):
+    hourly_energy += {}
+
 days_in_months = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 months = {"Jan": 0,
           "Feb": 1,
@@ -19,12 +23,12 @@ seasons = {"Winter": ("Jan", "Feb"),
            "Summer": ("Jun", "Aug"),
            "Fall": ("Sep", "Nov")}
 
-
+"""
 def update_dictionary(cznum, year, end_use):
-    """
+    
     For the code below, we assume a particular file.
     In reality, the file will change based on the climate zone and year.
-    """
+    
     with open('pge-res-PGSA-res_misc-noKW-Care-0.4_0.5.csv') as csvfile:
     readCSV = csv.reader(csvfile, delimiter=',')
     curr_dict = hourly_energy[cznum];
@@ -32,6 +36,15 @@ def update_dictionary(cznum, year, end_use):
     for row in readCSV:
         total_energy = row[5]
         curr_dict[(year, end_use)].append(total_energy)
+"""
+def update_dictionary(filename, year, end_use):
+    with open(filename) as csvfile:
+        read_csv = csv.reader(csvfile, delimiter=",")
+        read_csv.next()
+        for cznum in range(16):
+            hourly_energy[cznum][(year, end_use)] = []
+            for row in read_csv:
+                hourly_energy[cznum][(year, end_use)].append(row[cznum + 1])
 
 
 def get_hourly_usage_for_year(cznum, year, end_use):
@@ -82,3 +95,8 @@ def hour_range(st_hour, end_hour, st_day, end_day, cznum, year, end_use):
         for j in range(st_hour, end_hour):
             total += hourly_usage_for_year[i + j]
     return total
+
+
+if __name__ == "__main__":
+    filename = sys.stdin.input()
+    print(filename)
