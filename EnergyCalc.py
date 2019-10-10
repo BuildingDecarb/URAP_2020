@@ -3,7 +3,7 @@ import sys
 
 hourly_energy = []
 for i in range(16):
-    hourly_energy += {}
+    hourly_energy.append({})
 
 days_in_months = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 months = {"Jan": 0,
@@ -37,13 +37,18 @@ def update_dictionary(cznum, year, end_use):
         total_energy = row[5]
         curr_dict[(year, end_use)].append(total_energy)
 """
+
+
 def update_dictionary(filename, year, end_use):
-    with open(filename) as csvfile:
-        read_csv = csv.reader(csvfile, delimiter=",")
-        read_csv.next()
+    with open(filename, 'r') as csvfile:
+        read_csv = csv.reader(csvfile)
         for cznum in range(16):
+            first = True
             hourly_energy[cznum][(year, end_use)] = []
             for row in read_csv:
+                if first:
+                    first = False
+                    continue
                 hourly_energy[cznum][(year, end_use)].append(row[cznum + 1])
 
 
@@ -98,5 +103,7 @@ def hour_range(st_hour, end_hour, st_day, end_day, cznum, year, end_use):
 
 
 if __name__ == "__main__":
-    filename = sys.stdin.input()
-    print(filename)
+    filename = sys.argv[1]
+    end_use = filename[0:2]
+    update_dictionary(filename, "2011", end_use)
+    print(hourly_energy[0])
