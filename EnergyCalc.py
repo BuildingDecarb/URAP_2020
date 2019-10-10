@@ -43,13 +43,14 @@ def update_dictionary(filename, year, end_use):
     with open(filename, 'r') as csvfile:
         read_csv = csv.reader(csvfile)
         for cznum in range(16):
+            csvfile.seek(0)
             first = True
             hourly_energy[cznum][(year, end_use)] = []
             for row in read_csv:
                 if first:
                     first = False
                     continue
-                hourly_energy[cznum][(year, end_use)].append(row[cznum + 1])
+                hourly_energy[cznum][(year, end_use)].append(float(row[cznum + 1]))
 
 
 def get_hourly_usage_for_year(cznum, year, end_use):
@@ -57,7 +58,11 @@ def get_hourly_usage_for_year(cznum, year, end_use):
     Helper function to access the appropriate hourly usage for a particular cznum, year, and end use.
     Returns a list of size 8760 with all the hourly energy usage.
     """
-    return hourly_energy[cznum][(year, end_use)]
+    return hourly_energy[cznum - 1][(year, end_use)]
+
+
+def get_annual_usage(cznum, year, end_use):
+    return sum(get_hourly_usage_for_year(cznum, year, end_use))
 
 
 def get_hourly_usage_for_seasons(season, cznum, year, end_use):
@@ -84,6 +89,7 @@ def get_hourly_usage_for_months(st_month, end_month, cznum, year, end_use, st_ho
     for i in range(end_month_num + 1):
         end_day += days_in_months[i]
     end_day -= 1
+    # print(str(st_day) + " " + str(end_day))
     return hour_range(st_hour, end_hour, st_day, end_day, cznum, year, end_use)
 
 
@@ -98,7 +104,9 @@ def hour_range(st_hour, end_hour, st_day, end_day, cznum, year, end_use):
     hourly_usage_for_year = get_hourly_usage_for_year(cznum, year, end_use)
     for i in range(st_day, end_day):
         for j in range(st_hour, end_hour):
-            total += hourly_usage_for_year[i + j]
+            day_in_hours = i * 24
+            total += hourly_usage_for_year[day_in_hours + j]
+    # print(end_day * 24 + end_hour)
     return total
 
 
@@ -106,4 +114,16 @@ if __name__ == "__main__":
     filename = sys.argv[1]
     end_use = filename[0:2]
     update_dictionary(filename, "2011", end_use)
-    print(hourly_energy[0])
+    for i in range(1, 17):
+        annual_usage = get_annual_usage(i, "2011", end_use)
+        print("Climate zone {} annual usage: {}".format(i, annual_usage))
+        year = get_hourly_usage_for_months("Jan", "Dec", i, "2011", end_use)
+        print(year)
+        """
+        total = 0
+        for key in months.keys():
+            monthly_usage = get_hourly_usage_for_months(key, key, i, "2011", end_use)
+            total += monthly_usage
+            print("{} monthly usage: {}".format(key, monthly_usage))
+        print(total)
+        """
