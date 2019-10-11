@@ -2,7 +2,7 @@ from calendar import monthrange
 import pandas as pd
 
 # PV System Specifications for Data Below
-# DC System Size: 4 kW //TODO: Update files to change to 1 kW
+# DC System Size: 1 kW
 # Module: Standard
 # Array Type: Fixed (open rack)
 # Array Tilt: 20°
