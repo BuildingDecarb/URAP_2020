@@ -23,7 +23,7 @@ def hour_bounds_by_month(month, year):
 
 
 # See LoadBalanceGraphing.ipynb for graphs
-
+# average for PV watts data
 def average_PV(month, year, climate):
     hourMap = pvdd.averageHourlyKWInMonth(climate, month)
     kW_list = np.zeros(24)
@@ -32,10 +32,21 @@ def average_PV(month, year, climate):
     return kW_list
 
 
-# find average ER_WH per hour for a given month, year, and climate zone
+# sum over ER_WH, HP_WH, and HP_SH values
+def cumulative_average_SH_and_WH(month, year, climate):
+    ER_WH_values = average_ER_WH(month, year, climate)
+    HP_WH_values = average_HP_WH(month, year, climate)
+    HP_SH_values = average_HP_SH(month, year, climate)
+    
+    temp_sum = np.sum([ER_WH_values, HP_WH_values], axis=0)
+    return np.sum([temp_sum, HP_SH_values], axis=0)
+
+
+
+# find average ER_WH, HP_WH, and HP_SH per month per hour for each climate zone.
 def average_ER_WH(month, year, climate):  # pass in month and climate as integers
     assert climate >= 1 and climate <= 16
-    assert month >= 1 and month <= 12
+    assert month >= 1 and month <= 24
     
     first_hour_of_month = hour_bounds_by_month(month, year)[0]
     last_hour_of_month = hour_bounds_by_month(month, year)[1]
@@ -52,7 +63,7 @@ def average_ER_WH(month, year, climate):  # pass in month and climate as integer
             
     num_days_in_month = ((last_hour_of_month+1)-first_hour_of_month) / 24
     return np.divide(average_loads, num_days_in_month)
-
+    
 
 # find average HP_WH per hour for a given month, year, and climate zone
 def average_HP_WH(month, year, climate):  # pass in month and climate as integers
