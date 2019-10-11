@@ -89,7 +89,7 @@ def get_hourly_usage_for_months(st_month, end_month, cznum, year, end_use, st_ho
     for i in range(end_month_num + 1):
         end_day += days_in_months[i]
     end_day -= 1
-    # print(str(st_day) + " " + str(end_day))
+    print(str(st_day) + " " + str(end_day))
     return hour_range(st_hour, end_hour, st_day, end_day, cznum, year, end_use)
 
 
@@ -102,8 +102,8 @@ def hour_range(st_hour, end_hour, st_day, end_day, cznum, year, end_use):
     """
     total = 0
     hourly_usage_for_year = get_hourly_usage_for_year(cznum, year, end_use)
-    for i in range(st_day, end_day):
-        for j in range(st_hour, end_hour):
+    for i in range(st_day, end_day + 1):
+        for j in range(st_hour, end_hour + 1):
             day_in_hours = i * 24
             total += hourly_usage_for_year[day_in_hours + j]
     # print(end_day * 24 + end_hour)
