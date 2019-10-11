@@ -97,7 +97,7 @@ def averageHourlyKWInMonth(climate, month):
     for city in cities:
         monthTable = city[city['Month'] == str(month)]
         for hour in range(24):
-            sumKWH = monthTable[monthTable['Hour'] == str(hour)]['AC System Output (W)'].sum()
+            sumKWH = monthTable[monthTable['Hour'] == str(hour)]['AC System Output (W)'].sum() / 1000
             averageKWH = sumKWH / days
             hourlyDict[hour] = averageKWH
     return hourlyDict
