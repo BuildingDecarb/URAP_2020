@@ -612,7 +612,7 @@ def isDeviceinHome(home, devname):
 def addDevice(home, newdevname):
     for d in home.devices:
         dev = home.devices
-        if d.name <> newdev.name:  # if device already in the house..return the existing dev list
+        if d.name != newdev.name:  # if device already in the house..return the existing dev list
             dev += newdev
         return dev
 

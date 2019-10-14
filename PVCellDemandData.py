@@ -1,6 +1,17 @@
 from calendar import monthrange
 import pandas as pd
 
+# PV System Specifications for Data Below
+# DC System Size: 1 kW
+# Module: Standard
+# Array Type: Fixed (open rack)
+# Array Tilt: 20°
+# Array Azimuth: 180°
+# Efficiency: 14.08% 
+# Inverter Efficiency: 96%
+# DC to AC Size Ratio: 1.2
+# Capacity Factor: 15.3%
+
 C1_arcata = pd.read_csv("PVCellData/1_Arcata.csv", skiprows = 17)
 C1_eureka = pd.read_csv("PVCellData/1_Eureka.csv", skiprows = 17)
 
@@ -51,6 +62,11 @@ C15_needles = pd.read_csv("PVCellData/15_Needles.csv", skiprows = 17)
 C16_bishop = pd.read_csv("PVCellData/16_Bishop.csv", skiprows = 17)
 C16_mtshasta = pd.read_csv("PVCellData/16_Mtshasta.csv", skiprows = 17)
 
+# Key: Climate number
+# Value: List of tables for 2-3 cities from the climate.
+# Table cols: 
+# Month, Day, Hour, Beam Irradiance (W/m^2), Diffuse Irradiance (W/m^2), Ambient Temperature (C), Wind Speed (m/s),
+# Plane of Array Irradiance (W/m^2), Cell Temperature (C), DC Array Output (W), AC System Output (W)
 climateDict = {
     1 : [C1_arcata, C1_eureka],
     2 : [C2_napa, C2_sanrafael],
@@ -70,7 +86,26 @@ climateDict = {
     16 : [C16_bishop, C16_mtshasta]
 }
 
+# Input: 1 <= climate <= 16, 1 <= month <= 12
+# Returns a dictionary with hour (0 -> 23) as keys and kW as values.
+def averageHourlyKWInMonth(climate, month):
+    assert climate >= 1 and climate <= 16
+    assert month >= 1 and month <= 12
+    hourlyDict = {}
+    cities = climateDict.get(climate)
+    days = days_in_month(month)
+    for city in cities:
+        monthTable = city[city['Month'] == str(month)]
+        for hour in range(24):
+            sumKWH = monthTable[monthTable['Hour'] == str(hour)]['AC System Output (W)'].sum() / 1000
+            averageKWH = sumKWH / days
+            hourlyDict[hour] = averageKWH
+    return hourlyDict
+            
+# Input: 1 <= climate <= 16
+# Returns a tuple (Month, Day, Demand) that represents the highest peak demand day of the year for the given climate.
 def dailyPeakDemand(climate):
+    assert climate >= 1 and climate <= 16
     cities = climateDict.get(climate)
     peakMonth = 0
     peakDay = 0
@@ -87,7 +122,10 @@ def dailyPeakDemand(climate):
                     peakDay = day
     return (peakMonth, peakDay, peakDailyDemand / 1000)
 
+# Input: 1 <= climate <= 16
+# Returns a tuple (Month, Demand) that represents the highest peak demand month of the year for the given climate.
 def monthlyPeakDemand(climate):
+    assert climate >= 1 and climate <= 16
     cities = climateDict.get(climate)
     peakMonth = 0
     peakMonthlyDemand = 0
@@ -99,14 +137,28 @@ def monthlyPeakDemand(climate):
                 peakMonthlyDemand = monthlyDemand
     return (peakMonth, peakMonthlyDemand / 1000)
 
+# Input: 1 <= climate <= 16
+# Returns the demand in KW of the most demanding city between 2-3 cities in the given climate.
+def peakYearlyDemand(climate):
+    assert climate >= 1 and climate <= 16
+    cities = climateDict.get(climate)
+    demand = 0
+    for city in cities:
+        cityDemand = city[city['Month'] == 'Totals']['AC System Output (W)'][8760]
+        if (demand < cityDemand):
+            demand = cityDemand
+    return demand / 1000
 
-
-def yearlyDemand(climate):
+# Input: 1 <= climate <= 16
+# Returns the average demand in KW of 2-3 cities in the given climate.
+def averageYearlyDemand(climate):
+    assert climate >= 1 and climate <= 16
     cities = climateDict.get(climate)
     sum = 0
     for city in cities:
         sum += city[city['Month'] == 'Totals']['AC System Output (W)'][8760]
     return (sum / len(cities)) / 1000
 
+# Helper function to get how many days in a year there are.
 def days_in_month(month, year=2019):
     return monthrange(year, month)[1]

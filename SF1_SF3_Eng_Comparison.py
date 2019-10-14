@@ -39,7 +39,7 @@ xTickMarks = ['','','','','','','','','','',''] #,'' ,'','','' ,'','' ,'','' ,''
 CompYears = ('3','4','6','7','8','9','10','12')
 MyList = ['3','4','6','7','8','9','10','12']
 index = len(CompYears)
-print "index", index
+print("index", index)
 #CompYears = MyList
 # xTickMarks = []
 # xTickMarks[0] =CompYears[0]
