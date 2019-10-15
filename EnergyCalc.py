@@ -92,6 +92,11 @@ def get_hourly_usage_for_months(st_month, end_month, cznum, year, end_use, st_ho
     print(str(st_day) + " " + str(end_day))
     return hour_range(st_hour, end_hour, st_day, end_day, cznum, year, end_use)
 
+def get_peak_energy_usage_per_month(st_month, end_month, cznum, year, end_use, st_hour=0, end_hour=23):
+    """
+    Gets the maximum energy usage and corresponding hour for each month
+    """
+
 
 def hour_range(st_hour, end_hour, st_day, end_day, cznum, year, end_use):
     """
