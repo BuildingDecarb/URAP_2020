@@ -92,6 +92,29 @@ def get_hourly_usage_for_months(st_month, end_month, cznum, year, end_use, st_ho
     print(str(st_day) + " " + str(end_day))
     return hour_range(st_hour, end_hour, st_day, end_day, cznum, year, end_use)
 
+def get_peak_energy_usage_per_month(cznum, year, end_use):
+    """
+    Gets the maximum energy usage and corresponding hour for each month
+    """
+    
+    current = get_hourly_usage_for_year(cznum, year, end_use)
+    month_usages = {}
+    curr_hour = 0
+    for i in range(12):
+        max_hour = curr_hour
+        max_energy = 0
+        for j in range(curr_hour, curr_hour + 24 * days_in_months[i]):
+            if current[j] > max_energy:
+                max_hour = j + 1
+                max_energy = current[j]
+        curr_hour = curr_hour + 24 * days_in_months[i]
+        month_usages[i + 1] = [max_hour, max_energy]
+    return month_usages
+
+
+
+
+
 
 def hour_range(st_hour, end_hour, st_day, end_day, cznum, year, end_use):
     """
@@ -117,13 +140,17 @@ if __name__ == "__main__":
     for i in range(1, 17):
         annual_usage = get_annual_usage(i, "2011", end_use)
         print("Climate zone {} annual usage: {}".format(i, annual_usage))
-        year = get_hourly_usage_for_months("Jan", "Dec", i, "2011", end_use)
-        print(year)
-        """
-        total = 0
-        for key in months.keys():
-            monthly_usage = get_hourly_usage_for_months(key, key, i, "2011", end_use)
-            total += monthly_usage
-            print("{} monthly usage: {}".format(key, monthly_usage))
-        print(total)
-        """
+        peak_usages = get_peak_energy_usage_per_month(i, "2011", end_use)
+        for j in range(1, 13):
+            print("Climate zone {} Month {} peak hour and energy: {}".format(i, j, peak_usages[j]))
+
+
+
+#"""
+#total = 0
+#for key in months.keys():
+#    monthly_usage = get_hourly_usage_for_months(key, key, i, "2011", end_use)
+ #   total += monthly_usage
+  #  print("{} monthly usage: {}".format(key, monthly_usage))
+#print(total)
+#"""
