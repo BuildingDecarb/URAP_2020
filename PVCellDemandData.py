@@ -101,7 +101,7 @@ def averageHourlyKWInMonth(climate, month):
             averageKWH = sumKWH / days
             hourlyDict[hour] = averageKWH
     return hourlyDict
-            
+
 # Input: 1 <= climate <= 16
 # Returns a tuple (Month, Day, Demand) that represents the highest peak demand day of the year for the given climate.
 def dailyPeakDemand(climate):

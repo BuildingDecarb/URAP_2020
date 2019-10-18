@@ -23,13 +23,21 @@ def hour_bounds_by_month(month, year):
 
 
 # See LoadBalanceGraphing.ipynb for graphs
-# average for PV watts data
+# average for PV watts data on 1 kW size
 def average_PV(month, year, climate):
     hourMap = pvdd.averageHourlyKWInMonth(climate, month)
     kW_list = np.zeros(24)
     for hour in range(24):
         kW_list[hour] = hourMap[hour]
     return kW_list
+
+#Function that returns difference between demand and supply
+def heatingDemandOnPVSupply(month, year, climate):
+    supply = np.trapz(average_PV(month, year, climate))
+    demand = np.trapz(cumulative_average_SH_and_WH(month, year, climate))
+    return demand - supply
+
+
 
 
 # sum over ER_WH, HP_WH, and HP_SH values
