@@ -7,15 +7,15 @@ from Appliances_Class import *
 import copy
 # from AnnualHeatDemand import AnnualEngDemand
 
-import xlrd
-import xlsxwriter
+# import xlrd
+# import xlsxwriter
 import numpy as np
 # import seaborn as sns
-from matplotlib.pyplot import cm
+# from matplotlib.pyplot import cm
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from matplotlib.pyplot import *
-import matplotlib.patches as mpatch
+# import matplotlib.patches as mpatch
 
 
 def binomial_draw(p, n=1, N=1):
@@ -35,7 +35,7 @@ a tuple of year and end-use to a list of total energy usage for all hours"""
 
 hourly_energy = []
 for i in range(16):
-    hourly_energy += {}
+    hourly_energy.append({})
 
 
 class HouseType:
@@ -68,7 +68,7 @@ class HouseType:
     """Function which returns hourly energy usage """
 
 
-    def hourly_usage(year, end_use, hour):
+    def hourly_usage(self, year, end_use, hour):
         temp = (year, end_use)  # Tuple of variables
         return hourly_energy[self.cznum][temp][hour - 1]
 
@@ -82,7 +82,7 @@ class HouseType:
         NGswitch = 0
         # print "TEST", num
         for k in range(0, num):
-            if self.devices[k].name <> "Cooler" and self.devices[k].name <> "Cond":
+            if self.devices[k].name != "Cooler" and self.devices[k].name != "Cond":
                 i += 1
                 esumheat += self.devices[k].AnnualHeatEngUsage_BTU()  # this does not contain Blower usage
                 #  print "before", i, esumheat
@@ -112,7 +112,7 @@ class HouseType:
         #  NGswitch = 0
         # print "TEST", num
         for k in range(0, num):
-            if self.devices[k].name <> "Cooler" and self.devices[k].name <> "Cond":
+            if self.devices[k].name != "Cooler" and self.devices[k].name != "Cond":
                 i += 1
                 esumheat += self.devices[k].AnnualHeatEngUsage_BTU()  # this does not contain Blower usage
             #  print "before", i, esumheat
@@ -159,7 +159,7 @@ class HouseType:
             #  print "\n NG Eng",k, self.devices[k].name ,esumNG
             elif self.devices[k].fuel.name == "Elec":
 
-                if self.devices[k].name <> "Cooler" and self.devices[k].name <> "Cond":
+                if self.devices[k].name != "Cooler" and self.devices[k].name != "Cond":
                     eheat = self.devices[k].AnnualHeatEngUsage_BTU() / kWh_BTU
                     esumElec += eheat
                 #   print "\n heating Energy",k,  self.devices[k].name, eheat
@@ -230,7 +230,7 @@ class HouseType:
         for k in range(0, num):
             hdd = self.devices[k].HDD
             cdd = self.devices[k].CDD
-            if self.devices[k].name <> "Cooler" and self.devices[k].name <> "Cond":
+            if self.devices[k].name != "Cooler" and self.devices[k].name != "Cond":
                 heateng = self.devices[k].AnnualHeatEngUsage_BTU()  # NO NG BLOWER Usage
                 if self.devices[k].fuel.name == "Elec":
                     emisheat += (heateng / kWh_BTU) * ElecEmisYrly[year] / 1000
@@ -608,13 +608,14 @@ def isDeviceinHome(home, devname):
             return 1
     return 0
 
-
+"""
 def addDevice(home, newdevname):
     for d in home.devices:
         dev = home.devices
         if d.name != newdev.name:  # if device already in the house..return the existing dev list
             dev += newdev
         return dev
+"""
 
 
 # get a list of devices of deviceType in a particular year from all hometypes

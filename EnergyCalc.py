@@ -110,20 +110,3 @@ def hour_range(st_hour, end_hour, st_day, end_day, cznum, year, end_use):
     return total
 
 
-if __name__ == "__main__":
-    filename = sys.argv[1]
-    end_use = filename[0:2]
-    update_dictionary(filename, "2011", end_use)
-    for i in range(1, 17):
-        annual_usage = get_annual_usage(i, "2011", end_use)
-        print("Climate zone {} annual usage: {}".format(i, annual_usage))
-        year = get_hourly_usage_for_months("Jan", "Dec", i, "2011", end_use)
-        print(year)
-        """
-        total = 0
-        for key in months.keys():
-            monthly_usage = get_hourly_usage_for_months(key, key, i, "2011", end_use)
-            total += monthly_usage
-            print("{} monthly usage: {}".format(key, monthly_usage))
-        print(total)
-        """
