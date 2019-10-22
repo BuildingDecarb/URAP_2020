@@ -89,7 +89,7 @@ def get_hourly_usage_for_months(st_month, end_month, cznum, year, end_use, st_ho
     for i in range(end_month_num + 1):
         end_day += days_in_months[i]
     end_day -= 1
-    print(str(st_day) + " " + str(end_day))
+    # print(str(st_day) + " " + str(end_day))
     return hour_range(st_hour, end_hour, st_day, end_day, cznum, year, end_use)
 
 
@@ -131,23 +131,23 @@ def hour_range(st_hour, end_hour, st_day, end_day, cznum, year, end_use):
 
 
 if __name__ == "__main__":
-    filename = sys.argv[1]
-    end_use = filename[0:2]
-    update_dictionary(filename, "2011", end_use)
-    for i in range(1, 17):
-        annual_usage = get_annual_usage(i, "2011", end_use)
-        print("Climate zone {} annual usage: {}".format(i, annual_usage))
-        peak_usages = get_peak_energy_usage_per_month(i, "2011", end_use)
-        for j in range(1, 13):
-            print("Climate zone {} Month {} peak hour and energy: {}".format(i, j, peak_usages[j]))
-
-
-
-#"""
-#total = 0
-#for key in months.keys():
-#    monthly_usage = get_hourly_usage_for_months(key, key, i, "2011", end_use)
- #   total += monthly_usage
-  #  print("{} monthly usage: {}".format(key, monthly_usage))
-#print(total)
-#"""
+    end_uses = []
+    for i in range(1, len(sys.argv)):
+        filename = sys.argv[i]
+        end_use = filename[0:5]
+        update_dictionary(filename, "2011", end_use)
+        end_uses.append(end_use)
+    for end_use in end_uses:
+        print(end_use)
+        for i in range(1, 17):
+            annual_usage = get_annual_usage(i, "2011", end_use)
+            print("Climate zone {} annual usage: {}".format(i, annual_usage))
+            year = get_hourly_usage_for_months("Jan", "Dec", i, "2011", end_use)
+        """
+        total = 0
+        for key in months.keys():
+            monthly_usage = get_hourly_usage_for_months(key, key, i, "2011", end_use)
+            total += monthly_usage
+            print("{} monthly usage: {}".format(key, monthly_usage))
+        print(total)
+        """
