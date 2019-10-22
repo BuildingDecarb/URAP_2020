@@ -25,7 +25,7 @@ class PVCell:
     #Get area needed for sufficient solar panels to meet a yearly demand.
     def getArea(self):
         demand = self.getDailyPeakDemand()
-        solar_output_per_cell = self.getKWH()   # TODO: 175.2 kWh/sm/year?
+        solar_output_per_cell = self.getKWH()
         area_needed = (demand / solar_output_per_cell) * 10
         return area_needed
     

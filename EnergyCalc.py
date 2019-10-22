@@ -89,8 +89,28 @@ def get_hourly_usage_for_months(st_month, end_month, cznum, year, end_use, st_ho
     for i in range(end_month_num + 1):
         end_day += days_in_months[i]
     end_day -= 1
-    # print(str(st_day) + " " + str(end_day))
+    print(str(st_day) + " " + str(end_day))
     return hour_range(st_hour, end_hour, st_day, end_day, cznum, year, end_use)
+
+
+def get_peak_energy_usage_per_month(cznum, year, end_use):
+    """
+    Gets the maximum energy usage and corresponding hour for each month
+    """
+    
+    current = get_hourly_usage_for_year(cznum, year, end_use)
+    month_usages = {}
+    curr_hour = 0
+    for i in range(12):
+        max_hour = curr_hour
+        max_energy = 0
+        for j in range(curr_hour, curr_hour + 24 * days_in_months[i]):
+            if current[j] > max_energy:
+                max_hour = j + 1
+                max_energy = current[j]
+        curr_hour = curr_hour + 24 * days_in_months[i]
+        month_usages[i + 1] = [max_hour, max_energy]
+    return month_usages
 
 
 def hour_range(st_hour, end_hour, st_day, end_day, cznum, year, end_use):
@@ -102,11 +122,32 @@ def hour_range(st_hour, end_hour, st_day, end_day, cznum, year, end_use):
     """
     total = 0
     hourly_usage_for_year = get_hourly_usage_for_year(cznum, year, end_use)
-    for i in range(st_day, end_day):
-        for j in range(st_hour, end_hour):
+    for i in range(st_day, end_day + 1):
+        for j in range(st_hour, end_hour + 1):
             day_in_hours = i * 24
             total += hourly_usage_for_year[day_in_hours + j]
     # print(end_day * 24 + end_hour)
     return total
 
 
+if __name__ == "__main__":
+    filename = sys.argv[1]
+    end_use = filename[0:2]
+    update_dictionary(filename, "2011", end_use)
+    for i in range(1, 17):
+        annual_usage = get_annual_usage(i, "2011", end_use)
+        print("Climate zone {} annual usage: {}".format(i, annual_usage))
+        peak_usages = get_peak_energy_usage_per_month(i, "2011", end_use)
+        for j in range(1, 13):
+            print("Climate zone {} Month {} peak hour and energy: {}".format(i, j, peak_usages[j]))
+
+
+
+#"""
+#total = 0
+#for key in months.keys():
+#    monthly_usage = get_hourly_usage_for_months(key, key, i, "2011", end_use)
+ #   total += monthly_usage
+  #  print("{} monthly usage: {}".format(key, monthly_usage))
+#print(total)
+#"""

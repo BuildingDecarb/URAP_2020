@@ -2,7 +2,7 @@ from calendar import monthrange
 import pandas as pd
 
 # PV System Specifications for Data Below
-# DC System Size: 4 kW //TODO: Update files to change to 1 kW
+# DC System Size: 1 kW
 # Module: Standard
 # Array Type: Fixed (open rack)
 # Array Tilt: 20°
@@ -97,11 +97,11 @@ def averageHourlyKWInMonth(climate, month):
     for city in cities:
         monthTable = city[city['Month'] == str(month)]
         for hour in range(24):
-            sumKWH = monthTable[monthTable['Hour'] == str(hour)]['AC System Output (W)'].sum()
+            sumKWH = monthTable[monthTable['Hour'] == str(hour)]['AC System Output (W)'].sum() / 1000
             averageKWH = sumKWH / days
             hourlyDict[hour] = averageKWH
     return hourlyDict
-            
+
 # Input: 1 <= climate <= 16
 # Returns a tuple (Month, Day, Demand) that represents the highest peak demand day of the year for the given climate.
 def dailyPeakDemand(climate):
