@@ -124,7 +124,7 @@ def tier(daylist, baseline=15, tier1=0.22376, tier2=0.28159, tier3=0.49334):
             monthlyuse.append(totaluse)
             totaluse = 0
     totalcost = 0
-    print(len(monthlyuse))
+    #print(len(monthlyuse))
     for month in monthlyuse:
         totalcost = totalcost + min(baseline, month) * tier1 + max(0, month - baseline) * tier2 + max(0, month - 4*baseline) * tier3
     return totalcost
@@ -156,7 +156,8 @@ print("Yearly energy costs under flat rate plan: $%f" % flat(wh_year))
 print("Yearly energy costs under flat rate plan: $%f" % flat(sh_year))
 print("Yearly energy costs under tiered rate plan: $%f" % tier(wh_year))
 print("Yearly energy costs under tiered rate plan: $%f" % tier(sh_year))
-#print("Yearly energy costs under time of use rate plan: $%f" % tou(df_year))
+print("Yearly energy costs under time of use rate plan: $%f" % tou(sh_year))
+print("Yearly energy costs under time of use rate plan: $%f" % tou(wh_year))
 
 yearuse = 0
 for day in df_year:

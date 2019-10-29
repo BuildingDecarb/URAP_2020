@@ -148,7 +148,7 @@ class HouseType:
                 totaluse = 0 + day.dayuse
             monthlyuse.append(totaluse) # Takes December into account
             totalcost = 0
-            print(len(monthlyuse))
+            #print(len(monthlyuse))
             for month in monthlyuse:
                 totalcost = totalcost + min(baseline, month) * tier1 + max(0, month - baseline) * tier2 + max(0, month - 4*baseline) * tier3
             tiered_use[end_use] = totalcost
@@ -157,26 +157,29 @@ class HouseType:
         return tiered_use
 
 
-    def tou(self, daylist, speak=0.25354, soffpeak=0.20657, wpeak=0.18022, woffpeak=0.17133):
+    def tou(self, speak=0.25354, soffpeak=0.20657, wpeak=0.18022, woffpeak=0.17133):
         # https://www.pge.com/tariffs/assets/pdf/tariffbook/ELEC_SCHEDS_EL-TOU.pdf
-        speaksum = 0
-        soffpeaksum = 0
-        wpeaksum = 0
-        woffpeaksum = 0
-        for day in daylist:
-            if day.season == "summer":
-                if day.weekday == "weekday":
-                    speaksum = speaksum + sum(day.use[14:19])
-                    soffpeaksum = soffpeaksum + sum(day.use[:14]) + sum(day.use[19:])
+        tou_use = {}
+        for end_use in self.year_dict.keys():
+            speaksum, soffpeaksum, wpeaksum, woffpeaksum = 0, 0, 0, 0 #summer and winter peak/offpeak
+            daylist= self.year_dict[end_use]
+            for day in daylist:
+                if day.season == "summer":
+                    if day.datetime.weekday() < 5: # Checks for a weekend
+                        speaksum = speaksum + sum(day.use[14:19]) # Peak hours are 3 PM - 8 PM
+                        soffpeaksum = soffpeaksum + sum(day.use[:14]) + sum(day.use[19:])
+                    else:
+                        soffpeaksum = soffpeaksum + day.dayuse
                 else:
-                    soffpeaksum = soffpeaksum + day.dayuse
-            else:
-                if day.weekday == "weekday":
-                    wpeaksum = wpeaksum + sum(day.use[14:19])
-                    woffpeaksum = woffpeaksum + sum(day.use[:14]) + sum(day.use[19:])
-                else:
-                    woffpeaksum = woffpeaksum + day.dayuse
-        return speaksum * speak + soffpeaksum * soffpeak + wpeaksum * wpeak + woffpeaksum * woffpeak
+                    if day.datetime.weekday() < 5:
+                        wpeaksum = wpeaksum + sum(day.use[14:19])
+                        woffpeaksum = woffpeaksum + sum(day.use[:14]) + sum(day.use[19:])
+                    else:
+                        woffpeaksum = woffpeaksum + day.dayuse
+            end_use_price = speaksum * speak + soffpeaksum * soffpeak + wpeaksum * wpeak + woffpeaksum * woffpeak
+            tou_use[end_use] = end_use_price
+        tou_use["Total"] = sum(list(tou_use.values()))
+        return tou_use
 
     def update_dictionary(filename, year, end_use):
         with open(filename, 'r') as csvfile:
