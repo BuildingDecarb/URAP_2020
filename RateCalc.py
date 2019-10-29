@@ -151,12 +151,12 @@ def tou(daylist, speak=0.25354, soffpeak=0.20657, wpeak=0.18022, woffpeak=0.1713
     return speaksum * speak + soffpeaksum * soffpeak + wpeaksum * wpeak + woffpeaksum * woffpeak
 
 
-print("Yearly energy costs under flat rate plan: $%f" % flat(df_year))
-print("Yearly energy costs under tiered rate plan: $%f" % tier(df_year))
-print("Yearly energy costs under time of use rate plan: $%f" % tou(df_year))
+print("Yearly energy costs under flat rate plan: $%f" % flat(wh_year))
+#print("Yearly energy costs under tiered rate plan: $%f" % tier(df_year))
+#print("Yearly energy costs under time of use rate plan: $%f" % tou(df_year))
 
 yearuse = 0
 for day in df_year:
     yearuse = yearuse + day.dayuse
 ppkwh = min(flat(df_year), tier(df_year), tou(df_year))/yearuse
-print("$/kWh under the cheapest plan: $%f" % ppkwh)
+# print("$/kWh under the cheapest plan: $%f" % ppkwh)
