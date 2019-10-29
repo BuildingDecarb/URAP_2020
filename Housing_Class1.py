@@ -16,6 +16,8 @@ import numpy as np
 # import matplotlib.pyplot as plt
 from matplotlib.pyplot import *
 # import matplotlib.patches as mpatch
+import csv
+import pandas as pd
 
 
 def binomial_draw(p, n=1, N=1):
@@ -33,12 +35,28 @@ def remove_device(devlist, thisdevice, devicename):
 """List of 16 dictionaries, each corresponding to a dictionary. Each dictionary maps
 a tuple of year and end-use to a list of total energy usage for all hours"""
 
-hourly_energy = []
-for i in range(16):
-    hourly_energy.append({})
-
+days_in_months = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+months = {"Jan": 0,
+          "Feb": 1,
+          "Mar": 2,
+          "Apr": 3,
+          "May": 4,
+          "Jun": 5,
+          "Jul": 6,
+          "Aug": 7,
+          "Sep": 8,
+          "Oct": 9,
+          "Nov": 10,
+          "Dec": 11}
+seasons = {"Winter": ("Jan", "Feb"),
+           "Spring": ("Mar", "May"),
+           "Summer": ("Jun", "Aug"),
+           "Fall": ("Sep", "Nov")}
 
 class HouseType:
+
+    hourly_energy = [{} for x in range(16)]
+
     def __init__(self, type, HouseNum, cznum, size1, size2, vintage, devices, is_new=False):
         self.type = type  # SingleFam, Multi_Fam, apt, mobile
         self.HouseNum = HouseNum
@@ -47,10 +65,12 @@ class HouseType:
         self.size2 = size2  # surface area of the roof
         self.vintage = vintage
         self.devices = devices  # device class
+        self.end_uses = [device.name for device in self.devices]
+        self.year_dict = {}
         self.is_new = is_new  # boolean
 
-        if self.devices[0].vintage <= 2007:
-            pp = binomial_draw(0.1)
+        #if self.devices[0].vintage <= 2007:
+        #    pp = binomial_draw(0.1)
 
         #  if pp ==0:
         #          self.versionId = 1
@@ -64,13 +84,155 @@ class HouseType:
 
     # def HHCountWithdevice(self, devicetype):
 
+    class Day:
+        def __init__(self, use):
+            self.season = "winter"
+            self.weekday = "weekday"
+            self.use = use
+            self.dayuse = sum(self.use)
+
+        def setSeason(self, season):
+            self.season = season
+
+        def setDay(self, weekday):
+            self.weekday = weekday
+
+    def createYearDict(self, cznum, year):
+        for end_use in self.end_uses:
+            self.year_dict[end_use] = self.createYear(cznum, year, end_use)
+
+    def createYear(self, cznum, year, end_use):
+        daylist = []
+        use = []
+        usage = HouseType.hourly_energy[cznum - 1][year, end_use]
+        for i in range(len(usage)):
+            use.append(usage[i])
+            if (i + 1) % 24 == 0:
+                daylist.append(HouseType.Day(use))
+                use = []
+        return daylist
+
+    # TODO: use datetime module to set weekday/weekend
+    def distributeWeekday(self, daylist, jan1): #change day of week for first day of the year (monday = 1, tuesday = 2, ...sunday = 7)
+        for day in daylist:
+            if jan1%7 == 6 or jan1%7 == 0:
+                day.weekday = 'weekend'
+            jan1 = jan1 + 1
+
+    def distributeSeason(self, daylist):
+        i = 1
+        for day in daylist:
+            if i >= year[5] and i < year[9]:
+                day.season = 'summer'
+            i = i + 1
+
+    def update_dictionary(self, filename, year, end_use):
+        with open(filename, 'r') as csvfile:
+            read_csv = csv.reader(csvfile)
+            for cznum in range(16):
+                csvfile.seek(0)
+                first = True
+                HouseType.hourly_energy[cznum][(year, end_use)] = []
+                for row in read_csv:
+                    if first:
+                        first = False
+                        continue
+                    HouseType.hourly_energy[cznum][(year, end_use)].append(float(row[cznum + 1]))
+
+    def get_hourly_usage_for_year(self, cznum, year, end_use):
+        """
+        Helper function to access the appropriate hourly usage for a particular cznum, year, and end use.
+        Returns a list of size 8760 with all the hourly energy usage.
+        """
+        return HouseType.hourly_energy[cznum - 1][(year, end_use)]
+
+    def get_annual_cost_base_price(self, cznum, year, end_uses, rate):
+        annual_usage = self.get_total_annual_usage(cznum, year, end_uses)
+        return annual_usage * rate
+
+    def get_total_annual_usage(self, cznum, year, end_uses):
+        usages = self.get_annual_usage(cznum, year, end_uses)
+        total = 0
+        for usage in usages.values():
+            total += usage
+        return total
+
+    def get_annual_usage(self, cznum, year, end_uses):
+        result = {}
+        for end_use in end_uses:
+            result[end_use] = sum(self.get_hourly_usage_for_year(cznum, year, end_use))
+        return result
+
+    def get_hourly_usage_for_seasons(self, season, cznum, year, end_uses):
+        """
+        Calculates the energy used for a particular season.
+        """
+        st_month = seasons[season][0]
+        end_month = seasons[season][1]
+        return self.get_hourly_usage_for_months(st_month, end_month, cznum, year, end_uses)
+
+    def get_hourly_usage_for_months(self, st_month, end_month, cznum, year, end_uses, st_hour=0, end_hour=23):
+        """
+        Calculates the energy used for a particular month range.
+        st_month and end_month are strings containing the first 3 letters of the month.
+        st_hour and end_hour can be specified, but function defaults to calculating usage for the entire day.
+        """
+        st_month_num = months[st_month]
+        end_month_num = months[end_month]
+        st_day = 0
+        for i in range(st_month_num):
+            st_day += days_in_months[i]
+        end_day = 0
+        for i in range(end_month_num + 1):
+            end_day += days_in_months[i]
+        end_day -= 1
+        # print(str(st_day) + " " + str(end_day))
+        return self.hour_range(st_hour, end_hour, st_day, end_day, cznum, year, end_uses)
+
+    def get_peak_energy_usage_per_month(self, cznum, year, end_uses):
+        """
+        Gets the maximum energy usage and corresponding hour for each month
+        """
+        result = {}
+        for end_use in end_uses:
+            current = self.get_hourly_usage_for_year(cznum, year, end_use)
+            month_usages = {}
+            curr_hour = 0
+            for i in range(12):
+                max_hour = curr_hour
+                max_energy = 0
+                for j in range(curr_hour, curr_hour + 24 * days_in_months[i]):
+                    if current[j] > max_energy:
+                        max_hour = j + 1
+                        max_energy = current[j]
+                curr_hour = curr_hour + 24 * days_in_months[i]
+                month_usages[i + 1] = [max_hour, max_energy]
+            result[end_use] = month_usages
+        return result
+
+    def hour_range(self, st_hour, end_hour, st_day, end_day, cznum, year, end_uses):
+        """
+        Calculates the energy used for a particular time range across a day range.
+        Ex: st_hour = 10, end_hour = 18, st_day = 0, end_day = 30
+        Returns the total hourly energy used from 10 a.m. to 6 p.m. each day
+        from January 1st to January 31st.
+        """
+        result = {}
+        for end_use in end_uses:
+            total = 0
+            hourly_usage_for_year = self.get_hourly_usage_for_year(cznum, year, end_use)
+            for i in range(st_day, end_day + 1):
+                for j in range(st_hour, end_hour + 1):
+                    day_in_hours = i * 24
+                    total += hourly_usage_for_year[day_in_hours + j]
+            # print(end_day * 24 + end_hour)
+            result[end_use] = total
+        return result
 
     """Function which returns hourly energy usage """
-
-
     def hourly_usage(self, year, end_use, hour):
         temp = (year, end_use)  # Tuple of variables
-        return hourly_energy[self.cznum][temp][hour - 1]
+        return HouseType.hourly_energy[self.cznum][temp][hour - 1]
 
 
     def HHenergyUsage_BTU(self):  # outputs heating and cooling energy in BTUs
@@ -772,7 +934,7 @@ def getwtAvgEF(stats, deviceType, homeType, year):  # weighted average age is li
                     # print "home type wtavg",year, year-d.vintage, home.type, deviceType, life ,cnt
     return wtavgEF / cnt  # wtavg /cnt
 
-
+"""
 # horizon = 5   #breakeven carbon
 # CC =  0
 Stck1 = 1
@@ -907,3 +1069,4 @@ print
 ##np1 = SF1.HHCCBreakEven( SF2,year)
 ##np2 = SF1.HHCCBreakEven( SF3,year)
 ##print "HOUSES", np1, np2
+"""

@@ -1,9 +1,9 @@
 import csv
 import sys
+from Housing_Class1 import HouseType
+from Appliances_Class import Device
 
-hourly_energy = []
-for i in range(16):
-    hourly_energy.append({})
+hourly_energy = [{} for x in range(16)]
 
 days_in_months = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 months = {"Jan": 0,
@@ -61,20 +61,23 @@ def get_hourly_usage_for_year(cznum, year, end_use):
     return hourly_energy[cznum - 1][(year, end_use)]
 
 
-def get_annual_usage(cznum, year, end_use):
-    return sum(get_hourly_usage_for_year(cznum, year, end_use))
+def get_annual_usage(cznum, year, end_uses):
+    result = {}
+    for end_use in end_uses:
+        result[end_use] = sum(get_hourly_usage_for_year(cznum, year, end_use))
+    return result
 
 
-def get_hourly_usage_for_seasons(season, cznum, year, end_use):
+def get_hourly_usage_for_seasons(season, cznum, year, end_uses):
     """
     Calculates the energy used for a particular season.
     """
     st_month = seasons[season][0]
     end_month = seasons[season][1]
-    return get_hourly_usage_for_months(st_month, end_month, cznum, year, end_use)
+    return get_hourly_usage_for_months(st_month, end_month, cznum, year, end_uses)
 
 
-def get_hourly_usage_for_months(st_month, end_month, cznum, year, end_use, st_hour=0, end_hour=23):
+def get_hourly_usage_for_months(st_month, end_month, cznum, year, end_uses, st_hour=0, end_hour=23):
     """
     Calculates the energy used for a particular month range.
     st_month and end_month are strings containing the first 3 letters of the month.
@@ -90,44 +93,49 @@ def get_hourly_usage_for_months(st_month, end_month, cznum, year, end_use, st_ho
         end_day += days_in_months[i]
     end_day -= 1
     # print(str(st_day) + " " + str(end_day))
-    return hour_range(st_hour, end_hour, st_day, end_day, cznum, year, end_use)
+    return hour_range(st_hour, end_hour, st_day, end_day, cznum, year, end_uses)
 
 
-def get_peak_energy_usage_per_month(cznum, year, end_use):
+def get_peak_energy_usage_per_month(cznum, year, end_uses):
     """
     Gets the maximum energy usage and corresponding hour for each month
     """
-    
-    current = get_hourly_usage_for_year(cznum, year, end_use)
-    month_usages = {}
-    curr_hour = 0
-    for i in range(12):
-        max_hour = curr_hour
-        max_energy = 0
-        for j in range(curr_hour, curr_hour + 24 * days_in_months[i]):
-            if current[j] > max_energy:
-                max_hour = j + 1
-                max_energy = current[j]
-        curr_hour = curr_hour + 24 * days_in_months[i]
-        month_usages[i + 1] = [max_hour, max_energy]
-    return month_usages
+    result = {}
+    for end_use in end_uses:
+        current = get_hourly_usage_for_year(cznum, year, end_use)
+        month_usages = {}
+        curr_hour = 0
+        for i in range(12):
+            max_hour = curr_hour
+            max_energy = 0
+            for j in range(curr_hour, curr_hour + 24 * days_in_months[i]):
+                if current[j] > max_energy:
+                    max_hour = j + 1
+                    max_energy = current[j]
+            curr_hour = curr_hour + 24 * days_in_months[i]
+            month_usages[i + 1] = [max_hour, max_energy]
+        result[end_use] = month_usages
+    return result
 
 
-def hour_range(st_hour, end_hour, st_day, end_day, cznum, year, end_use):
+def hour_range(st_hour, end_hour, st_day, end_day, cznum, year, end_uses):
     """
     Calculates the energy used for a particular time range across a day range.
     Ex: st_hour = 10, end_hour = 18, st_day = 0, end_day = 30
     Returns the total hourly energy used from 10 a.m. to 6 p.m. each day
     from January 1st to January 31st.
     """
-    total = 0
-    hourly_usage_for_year = get_hourly_usage_for_year(cznum, year, end_use)
-    for i in range(st_day, end_day + 1):
-        for j in range(st_hour, end_hour + 1):
-            day_in_hours = i * 24
-            total += hourly_usage_for_year[day_in_hours + j]
-    # print(end_day * 24 + end_hour)
-    return total
+    result = {}
+    for end_use in end_uses:
+        total = 0
+        hourly_usage_for_year = get_hourly_usage_for_year(cznum, year, end_use)
+        for i in range(st_day, end_day + 1):
+            for j in range(st_hour, end_hour + 1):
+                day_in_hours = i * 24
+                total += hourly_usage_for_year[day_in_hours + j]
+        # print(end_day * 24 + end_hour)
+        result[end_use] = total
+    return result
 
 
 if __name__ == "__main__":
@@ -135,19 +143,35 @@ if __name__ == "__main__":
     for i in range(1, len(sys.argv)):
         filename = sys.argv[i]
         end_use = filename[0:5]
-        update_dictionary(filename, "2011", end_use)
+        HouseType.update_dictionary(filename, "2011", end_use)
         end_uses.append(end_use)
-    for end_use in end_uses:
-        print(end_use)
-        for i in range(1, 17):
-            annual_usage = get_annual_usage(i, "2011", end_use)
-            print("Climate zone {} annual usage: {}".format(i, annual_usage))
-            year = get_hourly_usage_for_months("Jan", "Dec", i, "2011", end_use)
-        """
-        total = 0
-        for key in months.keys():
-            monthly_usage = get_hourly_usage_for_months(key, key, i, "2011", end_use)
-            total += monthly_usage
-            print("{} monthly usage: {}".format(key, monthly_usage))
-        print(total)
-        """
+    hp_sh = Device('HP_SH', None, None, None, i, None, None, None, None, None, None, None, None, None)
+    hp_wh = Device('HP_WH', None, None, None, i, None, None, None, None, None, None, None, None, None)
+    er_wh = Device('ER_WH', None, None, None, i, None, None, None, None, None, None, None, None, None)
+    devices = []
+    devices.append(hp_sh)
+    devices.append(hp_wh)
+    #devices.append(er_wh)
+    """for i in range(1, 17):
+        house = HouseType('SF', 1, i, 0, 0, 0, devices)
+        annual_usage = house.get_annual_usage(i, "2011", house.end_uses)
+        print("Climate zone {} annual usage: {}".format(i, annual_usage))
+        # year = get_hourly_usage_for_months("Jan", "Dec", i, "2011", end_use)"""
+    devices_SH_HP = []
+    devices_SH_HP.append(hp_sh)
+    devices_SH_HP.append(hp_wh)
+    house_SH_HP = HouseType('House in CZ 4 with SH and HP', 1, 3, 0, 0, 0, devices_SH_HP)
+    #print("{} annual usage: {}".format(house_SH_HP.type, house_SH_HP.get_total_annual_usage(4, "2011", house_SH_HP.end_uses)))
+    #print("{} January usage: {}".format(house_SH_HP.type, house_SH_HP.get_total_annual_usage(4, "2011", house_SH_HP.end_uses)))
+    #print("{} annual cost with $0.18 base rate: ${}".format(house_SH_HP.type, house_SH_HP.get_annual_cost_base_price(4, "2011", house_SH_HP.end_uses, .18)))
+    print(house_SH_HP.get_peak_energy_usage_per_month(3, "2011", house_SH_HP.end_uses))
+
+
+"""
+    total = 0
+    for key in months.keys():
+        monthly_usage = get_hourly_usage_for_months(key, key, i, "2011", end_use)
+        total += monthly_usage
+        print("{} monthly usage: {}".format(key, monthly_usage))
+    print(total)
+    """

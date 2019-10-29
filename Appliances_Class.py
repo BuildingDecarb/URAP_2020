@@ -55,9 +55,9 @@ class Device:
         self.ef = ef  # Efficiency
         self.ef_cooler = ef_cooler
         self.C = C  # Climate zone number
-        self.HDD = cz[C, vintage].hdd  # cz is a dict mapping climate zone number to climatezone object
-        self.CDD = cz[C, vintage].cdd
-        self.inputTemp = cz[C, vintage].inputTemp
+        # self.HDD = cz[C, vintage].hdd  # cz is a dict mapping climate zone number to climatezone object
+        # self.CDD = cz[C, vintage].cdd
+        # self.inputTemp = cz[C, vintage].inputTemp
         self.outputTemp = outputTemp
         self.s1 = s1  # surface area of wall
         self.s2 = s2  # surface area of roof
@@ -71,7 +71,7 @@ class Device:
         self.OM = OM  # Operations and Maintenance
         self.hasRefrigerant = hasRefrigerant
         self.refrigerant = refrigerant
-        self.IncTemp = self.outputTemp - self.inputTemp  # cz[C,vintage].IncTemp
+        # self.IncTemp = self.outputTemp - self.inputTemp  # cz[C,vintage].IncTemp
         self.dailyVol = 50
 
     def weib0(self):  # before vintage year = 2005
