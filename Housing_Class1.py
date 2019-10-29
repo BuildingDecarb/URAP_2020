@@ -127,26 +127,34 @@ class HouseType:
         for end_use, daylist in self.year_dict.items():
             parttotaluse = 0
             for day in daylist:
+                #print(type(day))
                 parttotaluse = parttotaluse + day.dayuse
             flat_use[end_use] = parttotaluse * price
         flat_use["Total"] = sum(list(flat_use.values()))
         return flat_use
 
 
-    def tier(self, daylist, baseline=15, tier1=0.22376, tier2=0.28159, tier3=0.49334):
+    def tier(self, baseline=15, tier1=0.22376, tier2=0.28159, tier3=0.49334):
         # https://www.pge.com/tariffs/assets/pdf/tariffbook/ELEC_SCHEDS_E-1.pdf
-        monthlyuse = []
-        i = 1
-        totaluse = 0
-        for day in daylist:
-            totaluse = totaluse + day.dayuse
-            if i in year:
+        tiered_use = {}
+        for end_use in self.year_dict.keys():
+            daylist, totaluse, monthlyuse, i = self.year_dict[end_use], 0, [], 1
+            for day in daylist:
+                if day.datetime.month == i:
+                    totaluse = totaluse + day.dayuse
+                    continue
+                i += 1
                 monthlyuse.append(totaluse)
-                totaluse = 0
-        totalcost = 0
-        for month in monthlyuse:
-            totalcost = totalcost + min(baseline, month) * tier1 + max(0, month - baseline) * tier2 + max(0, month - 4*baseline) * tier3
-        return totalcost
+                totaluse = 0 + day.dayuse
+            monthlyuse.append(totaluse) # Takes December into account
+            totalcost = 0
+            print(len(monthlyuse))
+            for month in monthlyuse:
+                totalcost = totalcost + min(baseline, month) * tier1 + max(0, month - baseline) * tier2 + max(0, month - 4*baseline) * tier3
+            tiered_use[end_use] = totalcost
+            totalcost = 0
+        tiered_use["Total"] = sum(list(tiered_use.values()))
+        return tiered_use
 
 
     def tou(self, daylist, speak=0.25354, soffpeak=0.20657, wpeak=0.18022, woffpeak=0.17133):
