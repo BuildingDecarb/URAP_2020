@@ -148,7 +148,6 @@ class HouseType:
                 totaluse = 0 + day.dayuse
             monthlyuse.append(totaluse) # Takes December into account
             totalcost = 0
-            #print(len(monthlyuse))
             for month in monthlyuse:
                 totalcost = totalcost + min(baseline, month) * tier1 + max(0, month - baseline) * tier2 + max(0, month - 4*baseline) * tier3
             tiered_use[end_use] = totalcost

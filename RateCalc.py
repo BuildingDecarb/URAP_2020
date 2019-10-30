@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 
 
 year = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335] #first day of month
+last_day_in_months = [31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365]
 lyear = [1, 32, 61, 92, 122, 153, 183, 214, 245, 275, 306, 336] #for leap years
 monthnames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -66,8 +67,8 @@ distributeWeekday(sh_year, 3)
 
 df_wh = pd.read_csv(wh)
 wh_year = createYear(df_wh, '3')
-distributeSeason(sh_year)
-distributeWeekday(sh_year, 3)
+distributeSeason(wh_year)
+distributeWeekday(wh_year, 3)
 
 def graphYear(year, sh_year, wh_year, yeardays):
     plt.figure(figsize = (20,20))
@@ -120,11 +121,12 @@ def tier(daylist, baseline=15, tier1=0.22376, tier2=0.28159, tier3=0.49334):
     totaluse = 0
     for day in daylist:
         totaluse = totaluse + day.dayuse
-        if i in year:
+        if i in last_day_in_months:
             monthlyuse.append(totaluse)
             totaluse = 0
+        i += 1
     totalcost = 0
-    #print(len(monthlyuse))
+    print("Monthly use: {}".format(len(monthlyuse)))
     for month in monthlyuse:
         totalcost = totalcost + min(baseline, month) * tier1 + max(0, month - baseline) * tier2 + max(0, month - 4*baseline) * tier3
     return totalcost
@@ -152,10 +154,10 @@ def tou(daylist, speak=0.25354, soffpeak=0.20657, wpeak=0.18022, woffpeak=0.1713
     return speaksum * speak + soffpeaksum * soffpeak + wpeaksum * wpeak + woffpeaksum * woffpeak
 
 
-print("Yearly energy costs under flat rate plan: $%f" % flat(wh_year))
-print("Yearly energy costs under flat rate plan: $%f" % flat(sh_year))
-print("Yearly energy costs under tiered rate plan: $%f" % tier(wh_year))
-print("Yearly energy costs under tiered rate plan: $%f" % tier(sh_year))
+# print("Yearly energy costs under flat rate plan for WH: $%f" % flat(wh_year))
+# print("Yearly energy costs under flat rate plan for SH: $%f" % flat(sh_year))
+# print("Yearly energy costs under tiered rate plan for WH: $%f" % tier(wh_year))
+# print("Yearly energy costs under tiered rate plan for SH: $%f" % tier(sh_year))
 print("Yearly energy costs under time of use rate plan: $%f" % tou(sh_year))
 print("Yearly energy costs under time of use rate plan: $%f" % tou(wh_year))
 
