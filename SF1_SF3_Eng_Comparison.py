@@ -8,12 +8,12 @@ Created on Thu Jan 18 10:18:54 2018
 from Housing_Class1 import *
 #from HDD_CDD_Iterate import *
 #from HousingTypes import *
-import xlrd
+# import xlrd
 import xlsxwriter
 import numpy as np
 #import seaborn as sns
-from matplotlib.pyplot import cm 
-from matplotlib import pylab
+# from matplotlib.pyplot import cm
+# from matplotlib import pylab
 
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import *
