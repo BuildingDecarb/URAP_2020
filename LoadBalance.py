@@ -149,9 +149,57 @@ def graph_averagePV_sums():
     plt.show()
 
 
+def graph_HP_SH_By_Climate_And_Month():
+    fig = plt.figure()
+    fig.subplots_adjust(hspace=0.2, wspace=0.2)
+    fig.set_size_inches(28.5, 20.5)
 
+    for i in range(16):
+        ax = fig.add_subplot(4, 4, i+1)
+        ax.set_ylim(0, 1.5)
+        for j in range(12):
+            houraveragebymonthclimate = average_HP_SH(j+1, 2019, i+1)
+            plt.title("Climate: " + str(i+1))
+            if i == 1:
+                ax.plot(x, houraveragebymonthclimate, label = "Month:" + str(j))
+            else:
+                ax.plot(x, houraveragebymonthclimate)
+                
+    legend = fig.legend()
 
+def graph_HP_WH_By_Climate_And_Month():
+    fig = plt.figure()
+    fig.subplots_adjust(hspace=0.2, wspace=0.2)
+    fig.set_size_inches(28.5, 20.5)
 
+    for i in range(16):
+        ax = fig.add_subplot(4, 4, i+1)
+        ax.set_ylim(0, 1.3)
+        for j in range(12):
+            houraveragebymonthclimate = average_HP_WH(j+1, 2019, i+1)
+            plt.title("Climate: " + str(i+1))
+            if i == 1:
+                ax.plot(x, houraveragebymonthclimate, label = "Month:" + str(j))
+            else:
+                ax.plot(x, houraveragebymonthclimate)
+                
+    legend = fig.legend()
 
+def graph_HP_SH_WH_By_Climate_And_Month():
+    fig = plt.figure()
+    fig.subplots_adjust(hspace=0.2, wspace=0.2)
+    fig.set_size_inches(28.5, 20.5)
 
-
+    for i in range(16):
+        ax = fig.add_subplot(4, 4, i+1)
+        for j in range(12):
+            houraveragebymonthclimate = cumulative_average_SH_and_WH(j+1, 2019, i+1)
+            plt.title("Climate: " + str(i+1))
+            if i == 15:
+                ax.set_ylim(0, 2.5)
+                ax.plot(x, houraveragebymonthclimate, label = "Month:" + str(j))
+            else:
+                ax.set_ylim(0, 1.5)
+                ax.plot(x, houraveragebymonthclimate)
+                
+    legend = fig.legend()
