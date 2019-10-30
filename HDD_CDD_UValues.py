@@ -2,7 +2,7 @@
 """
 Created on Mon Apr  2 15:22:53 2018
 @author: shubaraghavan
-"""
+
 from Inputs import *
 import xlrd
 # Read in UValues for buildings (walls, roof and windows) and IncTemp for water heater
@@ -109,3 +109,4 @@ for i in range (1, Numcz+1):
 #for yr in range(ThisYear+1, ThisYear+15):
 #       for i in range(1, Numcz+1):
 #           print yr, i,  HH_withHeat[i,yr], HH_withCool[i,yr], cz[i,yr].HHsize
+"""

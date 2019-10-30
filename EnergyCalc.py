@@ -167,6 +167,8 @@ if __name__ == "__main__":
     house_SH_HP.create_year_dict(2014)
     # print(house_SH_HP.get_peak_energy_usage_per_month(3, 2011, house_SH_HP.end_uses))
     print("Yearly energy costs under flat rate plan: {}".format(house_SH_HP.flat(0.19)))
+    print("Yearly energy costs under tiered rate plan: {}".format(house_SH_HP.tier()))
+    print("Yearly energy costs under tou rate plan: {}".format(house_SH_HP.tou()))
 
 
 """

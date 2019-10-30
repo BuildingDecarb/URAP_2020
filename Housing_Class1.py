@@ -127,48 +127,59 @@ class HouseType:
         for end_use, daylist in self.year_dict.items():
             parttotaluse = 0
             for day in daylist:
+                #print(type(day))
                 parttotaluse = parttotaluse + day.dayuse
             flat_use[end_use] = parttotaluse * price
         flat_use["Total"] = sum(list(flat_use.values()))
         return flat_use
 
 
-    def tier(self, daylist, baseline=15, tier1=0.22376, tier2=0.28159, tier3=0.49334):
+    def tier(self, baseline=15, tier1=0.22376, tier2=0.28159, tier3=0.49334):
         # https://www.pge.com/tariffs/assets/pdf/tariffbook/ELEC_SCHEDS_E-1.pdf
-        monthlyuse = []
-        i = 1
-        totaluse = 0
-        for day in daylist:
-            totaluse = totaluse + day.dayuse
-            if i in year:
+        tiered_use = {}
+        for end_use in self.year_dict.keys():
+            daylist, totaluse, monthlyuse, i = self.year_dict[end_use], 0, [], 1
+            for day in daylist:
+                if day.datetime.month == i:
+                    totaluse = totaluse + day.dayuse
+                    continue
+                i += 1
                 monthlyuse.append(totaluse)
-                totaluse = 0
-        totalcost = 0
-        for month in monthlyuse:
-            totalcost = totalcost + min(baseline, month) * tier1 + max(0, month - baseline) * tier2 + max(0, month - 4*baseline) * tier3
-        return totalcost
+                totaluse = 0 + day.dayuse
+            monthlyuse.append(totaluse) # Takes December into account
+            totalcost = 0
+            #print(len(monthlyuse))
+            for month in monthlyuse:
+                totalcost = totalcost + min(baseline, month) * tier1 + max(0, month - baseline) * tier2 + max(0, month - 4*baseline) * tier3
+            tiered_use[end_use] = totalcost
+            totalcost = 0
+        tiered_use["Total"] = sum(list(tiered_use.values()))
+        return tiered_use
 
 
-    def tou(self, daylist, speak=0.25354, soffpeak=0.20657, wpeak=0.18022, woffpeak=0.17133):
+    def tou(self, speak=0.25354, soffpeak=0.20657, wpeak=0.18022, woffpeak=0.17133):
         # https://www.pge.com/tariffs/assets/pdf/tariffbook/ELEC_SCHEDS_EL-TOU.pdf
-        speaksum = 0
-        soffpeaksum = 0
-        wpeaksum = 0
-        woffpeaksum = 0
-        for day in daylist:
-            if day.season == "summer":
-                if day.weekday == "weekday":
-                    speaksum = speaksum + sum(day.use[14:19])
-                    soffpeaksum = soffpeaksum + sum(day.use[:14]) + sum(day.use[19:])
+        tou_use = {}
+        for end_use in self.year_dict.keys():
+            speaksum, soffpeaksum, wpeaksum, woffpeaksum = 0, 0, 0, 0 #summer and winter peak/offpeak
+            daylist= self.year_dict[end_use]
+            for day in daylist:
+                if day.season == "summer":
+                    if day.datetime.weekday() < 5: # Checks for a weekend
+                        speaksum = speaksum + sum(day.use[14:19]) # Peak hours are 3 PM - 8 PM
+                        soffpeaksum = soffpeaksum + sum(day.use[:14]) + sum(day.use[19:])
+                    else:
+                        soffpeaksum = soffpeaksum + day.dayuse
                 else:
-                    soffpeaksum = soffpeaksum + day.dayuse
-            else:
-                if day.weekday == "weekday":
-                    wpeaksum = wpeaksum + sum(day.use[14:19])
-                    woffpeaksum = woffpeaksum + sum(day.use[:14]) + sum(day.use[19:])
-                else:
-                    woffpeaksum = woffpeaksum + day.dayuse
-        return speaksum * speak + soffpeaksum * soffpeak + wpeaksum * wpeak + woffpeaksum * woffpeak
+                    if day.datetime.weekday() < 5:
+                        wpeaksum = wpeaksum + sum(day.use[14:19])
+                        woffpeaksum = woffpeaksum + sum(day.use[:14]) + sum(day.use[19:])
+                    else:
+                        woffpeaksum = woffpeaksum + day.dayuse
+            end_use_price = speaksum * speak + soffpeaksum * soffpeak + wpeaksum * wpeak + woffpeaksum * woffpeak
+            tou_use[end_use] = end_use_price
+        tou_use["Total"] = sum(list(tou_use.values()))
+        return tou_use
 
     def update_dictionary(filename, year, end_use):
         with open(filename, 'r') as csvfile:

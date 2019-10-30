@@ -2,7 +2,7 @@
 """
 Created on Mon Apr  2 15:22:53 2018
 @author: shubaraghavan
-"""
+
 from Inputs import *
 import xlrd
 # Read in UValues for buildings (walls, roof and windows) and Inc Temp for water heater
@@ -55,3 +55,4 @@ for i in range (1, Numcz+1):
        R1val[i,yr] = R1future
        R2val[i,yr] =  R2future
      
+"""
