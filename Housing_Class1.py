@@ -122,20 +122,80 @@ class HouseType:
                 curr_datetime = curr_datetime + datetime.timedelta(days=1)
         return daylist
 
-    def flat(self, price=0.19):
+    """Calculates yearly price for a house based on a given method. TODO: SHOULD WE MAKE CODE
+    CLEANER BY DEFINING THE FLAT AND TIER RATES AS CLASS ATTRIBUTES?
+    I THOUGHT ABOUT IT, BUT DOES NOT REALLY MAKE SENSE AS A TRAIT OF A SINGLE HOUSE"""
+
+
+    def yearly_cost(self, method, flat_rate=0.19, baseline=15, tier1=0.22376, tier2=0.28159, tier3=0.49334,
+                    speak=0.25354, soffpeak=0.20657, wpeak=0.18022, woffpeak=0.17133):
+        if method == 'flat':
+            return self.flat(flat_rate)
+        elif method == 'tier':
+            return self.tier(baseline, tier1, tier2, tier3)
+        elif method == 'tou':
+            return self.tou(speak, soffpeak, wpeak, woffpeak)
+
+    """Calculates price over a range of months for a house based on a given method."""
+
+    def cost_for_month_range(self, method, st_month, end_month, flat_rate=0.19, baseline=15, tier1=0.22376, tier2=0.28159, tier3=0.49334,
+                             speak=0.25354, soffpeak=0.20657, wpeak=0.18022, woffpeak=0.17133):
+        if method == 'flat':
+            return self.flat_month(st_month, end_month)
+        elif method == 'tier':
+            return self.tier_month(st_month, end_month)
+        elif method == 'tou':
+            return self.tou_month(st_month, end_month)
+
+    def flat_month(self, st_month, end_month, price=0.19):
         flat_use = {}
+        for end_use, daylist in self.year_dict.items():
+            parttotaluse = 0
+            for day in daylist:
+                if st_month <= day.datetime.month <= end_month:
+                    parttotaluse = parttotaluse + day.dayuse
+            flat_use[end_use] = parttotaluse * price
+        flat_use["Total"] = sum(list(flat_use.values()))
+        return flat_use
+
+
+    def flat(self, price=0.19):
+        """flat_use = {}
         for end_use, daylist in self.year_dict.items():
             parttotaluse = 0
             for day in daylist:
                 #print(type(day))
                 parttotaluse = parttotaluse + day.dayuse
             flat_use[end_use] = parttotaluse * price
-        flat_use["Total"] = sum(list(flat_use.values()))
-        return flat_use
+        flat_use["Total"] = sum(list(flat_use.values()))"""
+        return self.flat_month(1, 12)
 
+
+
+    """TODO: DOUBLE-CHECK THIS IS THE CORRECT WAY TO CALCULATE MONTHLY TIERED PRICING.
+    I DID WHAT MAKES THE MOST LOGICAL SENSE"""
+    def tier_month(self, st_month, end_month, baseline=15, tier1=0.22376, tier2=0.28159, tier3=0.49334):
+        tiered_use = {}
+        for end_use in self.year_dict.keys():
+            daylist, totaluse, monthlyuse, i = self.year_dict[end_use], 0, [], 1
+            for day in daylist:
+                if day.datetime.month == i:
+                    totaluse = totaluse + day.dayuse
+                    continue
+                i += 1
+                monthlyuse.append(totaluse)
+                totaluse = 0 + day.dayuse
+            monthlyuse.append(totaluse) # Takes December into account
+            totalcost = 0
+            for i in range(st_month, end_month + 1):
+                totalcost = totalcost + min(baseline, monthlyuse[i-1]) * tier1 + max(0, monthlyuse[i-1] - baseline)\
+                            * tier2 + max(0, monthlyuse[i-1] - 4*baseline) * tier3
+            tiered_use[end_use] = totalcost
+        tiered_use["Total"] = sum(list(tiered_use.values()))
+        return tiered_use
 
     def tier(self, baseline=15, tier1=0.22376, tier2=0.28159, tier3=0.49334):
-        # https://www.pge.com/tariffs/assets/pdf/tariffbook/ELEC_SCHEDS_E-1.pdf
+        """# https://www.pge.com/tariffs/assets/pdf/tariffbook/ELEC_SCHEDS_E-1.pdf
         tiered_use = {}
         for end_use in self.year_dict.keys():
             daylist, totaluse, monthlyuse, i = self.year_dict[end_use], 0, [], 1
@@ -151,14 +211,37 @@ class HouseType:
             for month in monthlyuse:
                 totalcost = totalcost + min(baseline, month) * tier1 + max(0, month - baseline) * tier2 + max(0, month - 4*baseline) * tier3
             tiered_use[end_use] = totalcost
-            totalcost = 0
-        tiered_use["Total"] = sum(list(tiered_use.values()))
-        return tiered_use
+        tiered_use["Total"] = sum(list(tiered_use.values()))"""
+        return self.tier_month(1, 12)
 
+
+    def tou_month(self, st_month, end_month, speak=0.25354, soffpeak=0.20657, wpeak=0.18022, woffpeak=0.17133):
+        tou_use = {}
+        for end_use in self.year_dict.keys():
+            speaksum, soffpeaksum, wpeaksum, woffpeaksum = 0, 0, 0, 0 #summer and winter peak/offpeak
+            daylist= self.year_dict[end_use]
+            for day in daylist: #Could make more efficient by a constant factor later if necessary
+                if st_month <= day.datetime.month <= end_month:
+                    if day.season == "summer":
+                        if day.datetime.weekday() < 5: # Checks for a weekend
+                            speaksum = speaksum + sum(day.use[14:19]) # Peak hours are 3 PM - 8 PM
+                            soffpeaksum = soffpeaksum + sum(day.use[:14]) + sum(day.use[19:])
+                        else:
+                            soffpeaksum = soffpeaksum + day.dayuse
+                    else:
+                        if day.datetime.weekday() < 5:
+                            wpeaksum = wpeaksum + sum(day.use[14:19])
+                            woffpeaksum = woffpeaksum + sum(day.use[:14]) + sum(day.use[19:])
+                        else:
+                            woffpeaksum = woffpeaksum + day.dayuse
+            end_use_price = speaksum * speak + soffpeaksum * soffpeak + wpeaksum * wpeak + woffpeaksum * woffpeak
+            tou_use[end_use] = end_use_price
+        tou_use["Total"] = sum(list(tou_use.values()))
+        return tou_use
 
     def tou(self, speak=0.25354, soffpeak=0.20657, wpeak=0.18022, woffpeak=0.17133):
         # https://www.pge.com/tariffs/assets/pdf/tariffbook/ELEC_SCHEDS_EL-TOU.pdf
-        tou_use = {}
+        """tou_use = {}
         for end_use in self.year_dict.keys():
             speaksum, soffpeaksum, wpeaksum, woffpeaksum = 0, 0, 0, 0 #summer and winter peak/offpeak
             daylist= self.year_dict[end_use]
@@ -177,8 +260,8 @@ class HouseType:
                         woffpeaksum = woffpeaksum + day.dayuse
             end_use_price = speaksum * speak + soffpeaksum * soffpeak + wpeaksum * wpeak + woffpeaksum * woffpeak
             tou_use[end_use] = end_use_price
-        tou_use["Total"] = sum(list(tou_use.values()))
-        return tou_use
+        tou_use["Total"] = sum(list(tou_use.values()))"""
+        return self.tou_month(1, 12)
 
     def update_dictionary(filename, year, end_use):
         with open(filename, 'r') as csvfile:

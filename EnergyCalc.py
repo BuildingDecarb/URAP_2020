@@ -166,9 +166,14 @@ if __name__ == "__main__":
     # print("{} annual cost with $0.18 base rate: ${}".format(house_SH_HP.type, house_SH_HP.get_annual_cost_base_price(4, "2011", house_SH_HP.end_uses, .18)))
     house_SH_HP.create_year_dict(2014)
     # print(house_SH_HP.get_peak_energy_usage_per_month(3, 2011, house_SH_HP.end_uses))
-    print("Yearly energy costs under flat rate plan: {}".format(house_SH_HP.flat(0.19)))
-    print("Yearly energy costs under tiered rate plan: {}".format(house_SH_HP.tier()))
-    print("Yearly energy costs under tou rate plan: {}".format(house_SH_HP.tou()))
+    # print("Yearly energy costs under flat rate plan: {}".format(house_SH_HP.yearly_cost('flat')))
+    # print("Monthly 4-12 energy costs under flat rate plan: {}".format(house_SH_HP.flat_month(4, 12)))
+    # print("Yearly energy costs under tiered rate plan: {}".format(house_SH_HP.yearly_cost('tier')))
+    # print("Monthly 4-12 energy costs under tiered rate plan: {}".format(house_SH_HP.tier_month(4, 12)))
+    # print("January energy costs under tiered rate plan: {}".format(house_SH_HP.tier_month(1, 1)))
+    # print("June energy costs under tiered rate plan: {}".format(house_SH_HP.tier_month(6, 6)))
+    print("Yearly energy costs under tou rate plan: {}".format(house_SH_HP.yearly_cost('tou')))
+    print("Monthly 4-12 energy costs under tou rate plan: {}".format(house_SH_HP.tou_month(4, 12)))
 
 
 """
