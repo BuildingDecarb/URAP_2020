@@ -13,14 +13,16 @@ NGInflation =  0.02 # {'LOW' : 0.01, 'MED': 0.03, 'HIGH': 0.05}
 ElecInflation = 0.02  #{'LOW' : 0.01, 'MED': 0.03, 'HIGH': 0.05}
 # PropInflation = 0.0  #  {'LOW' : 0.01, 'MED': 0.03, 'HIGH': 0.05}
 
-UnitNGEmission =  6.1 #kg/Therm
+UnitNGEmission = 6.1 #kg/Therm
 UnitPropEmission = 5.67 #kg/gal
 
 ElecEmis_ThisYear = 0.25  #kg/kWh   2016 ARB https://www.arb.ca.gov/cc/inventory/pubs/reports/2000_2016/ghg_inventory_trends_00-16.pdf
 ElecEmis_MidYear = 0.203  #place holder
-ElecEmis_EndYear =  0.0   #  Elec Emissions for years> Phase33  = 2045  is 0             
+ElecEmis_EndYear = 0.0   #  Elec Emissions for years> Phase33  = 2045  is 0
 
-
+ThisYear = 2016
+MidYear = 2030  # ESTIMATED
+EndYear = 2045
 
 UnitBTU = 8.34   #BTU to raise temp of 1 gallon of water by 1 deg F 
 Therm_BTU = 100000.0  # 1 therm in BTU
@@ -42,9 +44,10 @@ Therm_kWh = Therm_BTU/kWh_BTU
 Gal_kWh = Gal_BTU/kWh_BTU
 UnitProp = UnitBTU/Gal_BTU
 
+"""
 ElecEmisYrly = {}
 ElecEmisYrly[ThisYear] = ElecEmis_ThisYear 
-for yr in range(ThisYear+1,EndYear + EL_LT + 10 ):  #
+for yr in range(ThisYear+1, EndYear + EL_LT + 10):  #
         if yr <= MidYear:
             ElecEmisYrly[yr] = ElecEmis_ThisYear + ((ElecEmis_MidYear- ElecEmis_ThisYear)/(MidYear - ThisYear))*(yr - ThisYear)
         elif (yr>MidYear and yr <=Phase33):
@@ -52,6 +55,15 @@ for yr in range(ThisYear+1,EndYear + EL_LT + 10 ):  #
         else:
             ElecEmisYrly[yr] = ElecEmis_EndYear   #After Phase33 or 2045 ElecEmis = 0
       #  print yr, ElecEmisYrly[yr]
+"""
+
+ElecEmisYrly = {ThisYear: ElecEmis_ThisYear}
+for yr in range(ThisYear + 1, EndYear):
+    if yr <= MidYear:
+        ElecEmisYrly[yr] = ElecEmis_ThisYear + ((ElecEmis_MidYear - ElecEmis_ThisYear)/(MidYear - ThisYear))*(yr - ThisYear)
+    else:
+        ElecEmisYrly[yr] = ElecEmis_MidYear + ((ElecEmis_EndYear - ElecEmis_MidYear)/(EndYear - MidYear))*(yr - MidYear)
+
         
 #Annual Emissions from Natural gas for now is constant
 #Need to Look at this -for ex. switch to RE NG? 
@@ -90,7 +102,7 @@ for yr in range(ThisYear+1, EndYear + NG_LT +25):
 
 #Efficienciesof WH (current and future)
 
-for yr in range(PastYear-30, ThisYear+1):
+for yr in range(ThisYear - 30, ThisYear+1):
         NGEmisYrly[yr]= UnitNGEmission
         PropEmisYrly[yr] = UnitPropEmission
         ElecEmisYrly[yr] = ElecEmis_ThisYear

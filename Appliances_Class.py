@@ -317,7 +317,7 @@ class Device:
 
     def RefLeaks(self, yr):
         result = {}
-        if (self.hasRefrigerant == True):
+        if self.hasRefrigerant:
             leakages = self.refrigerant.RefLeakage(yr, yr + self.lt)
             for i in range(yr, yr + self.lt + 1):
                 result[i] = leakages[i]
@@ -326,7 +326,7 @@ class Device:
     def AvgRefLeaks(self, yr):  # in tons of CO2 eq
         result = {}
         avgleak = 0
-        if (self.hasRefrigerant == True):
+        if self.hasRefrigerant:
             result = self.RefLeaks(yr)  # in tons
             # for i in range(vint, vint+ self.lt):
             #   avgleak = avgleak + result[i]/(1+CCDiscRate)**(i-vint+1)
