@@ -124,11 +124,11 @@ def tier(daylist, baseline=15, tier1=0.22376, tier2=0.28159, tier3=0.49334):
         if i in last_day_in_months:
             monthlyuse.append(totaluse)
             totaluse = 0
-        i += 1
+        i += 1 # CHANGED: need to increment i
     totalcost = 0
     print("Monthly use: {}".format(len(monthlyuse)))
     for month in monthlyuse:
-        totalcost = totalcost + min(baseline, month) * tier1 + max(0, month - baseline) * tier2 + max(0, month - 4*baseline) * tier3
+        totalcost = totalcost + min(baseline, month) * tier1 + max(0, month - baseline) * tier2 + max(0, month - 4*baseline) * tier3  # changed tier2 calculation
     return totalcost
 
 
