@@ -324,13 +324,11 @@ class Device:
         return result
 
     def AvgRefLeaks(self, yr):  # in tons of CO2 eq
-        result = {}
-        avgleak = 0
         if self.hasRefrigerant:
             result = self.RefLeaks(yr)  # in tons
             # for i in range(vint, vint+ self.lt):
             #   avgleak = avgleak + result[i]/(1+CCDiscRate)**(i-vint+1)
-            avgleak = sum(result.values()) / self.lt
+            avgleak = sum(list(result.values())) / self.lt
         else:
             avgleak = 0
         return avgleak

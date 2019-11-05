@@ -290,8 +290,13 @@ class HouseType:
         """
         Returns annual emissions NOT including refrigerant leakage
         """
-        total_annual_usage = self.get_total_annual_usage(year)
-        return total_annual_usage * Inputs_Energy.ElecEmisYrly[year]
+        total_annual_energy_usage = self.get_total_annual_usage(year)
+        return total_annual_energy_usage * ElecEmisYrly[year]
+
+    def get_monthly_emissions(self, st_month, end_month, year):
+        total_monthly_energy_usage = sum(list(self.get_hourly_usage_for_months(st_month, end_month, year).values()))
+        return total_monthly_energy_usage * ElecEmisYrly[year]
+
 
     def get_hourly_usage_for_year(self, year, end_use):
         """
@@ -317,15 +322,15 @@ class HouseType:
             result[end_use] = sum(self.get_hourly_usage_for_year(year, end_use))
         return result
 
-    def get_hourly_usage_for_seasons(self, season, year, end_uses):
+    def get_hourly_usage_for_seasons(self, season, year,):
         """
         Calculates the energy used for a particular season.
         """
         st_month = seasons[season][0]
         end_month = seasons[season][1]
-        return self.get_hourly_usage_for_months(st_month, end_month, year, end_uses)
+        return self.get_hourly_usage_for_months(st_month, end_month, year,)
 
-    def get_hourly_usage_for_months(self, st_month, end_month, year, end_uses, st_hour=0, end_hour=23):
+    def get_hourly_usage_for_months(self, st_month, end_month, year, st_hour=0, end_hour=23):
         """
         Calculates the energy used for a particular month range.
         st_month and end_month are strings containing the first 3 letters of the month.
@@ -341,14 +346,14 @@ class HouseType:
             end_day += days_in_months[i]
         end_day -= 1
         # print(str(st_day) + " " + str(end_day))
-        return self.hour_range(st_hour, end_hour, st_day, end_day, year, end_uses)
+        return self.hour_range(st_hour, end_hour, st_day, end_day, year)
 
-    def get_peak_energy_usage_per_month(self, year, end_uses):
+    def get_peak_energy_usage_per_month(self, year):
         """
         Gets the maximum energy usage and corresponding hour for each month
         """
         result = {}
-        for end_use in end_uses:
+        for end_use in self.end_uses:
             current = self.get_hourly_usage_for_year(year, end_use)
             month_usages = {}
             curr_hour = 0
@@ -364,7 +369,7 @@ class HouseType:
             result[end_use] = month_usages
         return result
 
-    def hour_range(self, st_hour, end_hour, st_day, end_day, year, end_uses):
+    def hour_range(self, st_hour, end_hour, st_day, end_day, year):
         """
         Calculates the energy used for a particular time range across a day range.
         Ex: st_hour = 10, end_hour = 18, st_day = 0, end_day = 30
@@ -372,7 +377,7 @@ class HouseType:
         from January 1st to January 31st.
         """
         result = {}
-        for end_use in end_uses:
+        for end_use in self.end_uses:
             total = 0
             hourly_usage_for_year = self.get_hourly_usage_for_year(year, end_use)
             for i in range(st_day, end_day + 1):
