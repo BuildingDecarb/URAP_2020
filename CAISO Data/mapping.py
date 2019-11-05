@@ -1,10 +1,11 @@
 import pandas as pd 
 
-demand = pd.read_csv('01-01-19.csv').iloc[[2]]
-emissions = pd.read_csv('01-01-19-Emissions.csv')
+for i in range(1, 12):
+    demand = pd.read_csv('{}-1-19.csv'.format(i)).iloc[[2]]
+    emissions = pd.read_csv('{}-1-19-Emissions.csv'.format(i))
 
-dseries = demand.mean(axis = 1)
-eseries = emissions.mean(axis = 1)
-
-print(dseries.iat[0])
-print(eseries.iat[0])
+    d_series = demand.mean(axis=1)
+    e_series = emissions.mean(axis=1)
+    avg_demand = d_series.iat[0]
+    avg_emissions = e_series.iat[0]
+    print("Month {} CO2 emissions rate: {} kgCO2/kWH".format(i, avg_emissions/avg_demand))
