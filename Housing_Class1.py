@@ -293,6 +293,13 @@ class HouseType:
         total_annual_energy_usage = self.get_total_annual_usage(year)
         return total_annual_energy_usage * ElecEmisYrly[year]
 
+    def get_annual_emissions_per_enduse(self, year):
+        result = {}
+        annual_usage = self.get_annual_usage()
+        for end_use in self.end_uses:
+            result[end_use] = annual_usage[end_use] * ElecEmisYrly[year]
+        return result
+
     def get_monthly_emissions(self, st_month, end_month, year):
         total_monthly_energy_usage = sum(list(self.get_hourly_usage_for_months(st_month, end_month, year).values()))
         return total_monthly_energy_usage * ElecEmisYrly[year]

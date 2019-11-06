@@ -145,8 +145,8 @@ if __name__ == "__main__":
         end_use = filename[0:5]
         HouseType.update_dictionary(filename, 2014, end_use)
         end_uses.append(end_use)
-    hp_sh = Device('HP_SH', None, None, None, 3, None, None, None, None, None, None, 1, None, None, hasRefrigerant=True, refrigerant=Ref11)
-    hp_wh = Device('HP_WH', None, None, None, 3, None, None, None, None, None, None, None, None, None)
+    hp_sh = Device('HP_SH', None, None, None, 15, None, None, None, None, None, None, 1, None, None, hasRefrigerant=True, refrigerant=Ref11)
+    hp_wh = Device('HP_WH', None, None, None, 15, None, None, None, None, None, None, None, None, None)
     # er_wh = Device('ER_WH', None, None, None, 3, None, None, None, None, None, None, None, None, None)
     devices = []
     devices.append(hp_sh)
@@ -160,8 +160,11 @@ if __name__ == "__main__":
     devices_SH_HP = []
     devices_SH_HP.append(hp_sh)
     devices_SH_HP.append(hp_wh)
-    house_SH_HP = HouseType('House in CZ 3 with SH and HP', 1, 3, 0, 0, 0, devices_SH_HP)
+    house_SH_HP = HouseType('House in CZ 15 with SH and HP', 1, 15, 0, 0, 0, devices_SH_HP)
     house_SH_HP.create_year_dict(2014)
+
+    for month in months:
+        print("{} energy usage: {}".format(month, house_SH_HP.get_hourly_usage_for_months(month, month, 2014)))
 
     print("TEST ANNUAL ENERGY USAGE AND EMISSIONS")
     print("{} annual usage: {}".format(house_SH_HP.type, house_SH_HP.get_total_annual_usage(2014)))
