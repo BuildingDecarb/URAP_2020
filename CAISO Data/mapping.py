@@ -29,3 +29,4 @@ for i in range(1, 12):
 
 month_table = pd.DataFrame(data_list, index = labels)
 print(month_table)
+month_table.to_csv('month_table.csv', index=False)
