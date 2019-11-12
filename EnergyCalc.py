@@ -1,7 +1,7 @@
 import csv
 import sys
 from Housing_Class1 import HouseType
-from Appliances_Class import Device
+from Appliances_Class import *
 
 hourly_energy = [{} for x in range(16)]
 
@@ -145,8 +145,8 @@ if __name__ == "__main__":
         end_use = filename[0:5]
         HouseType.update_dictionary(filename, 2014, end_use)
         end_uses.append(end_use)
-    hp_sh = Device('HP_SH', None, None, None, 3, None, None, None, None, None, None, None, None, None)
-    hp_wh = Device('HP_WH', None, None, None, 3, None, None, None, None, None, None, None, None, None)
+    hp_sh = Device('HP_SH', None, None, None, 15, None, None, None, None, None, None, 1, None, None, hasRefrigerant=True, refrigerant=Ref11)
+    hp_wh = Device('HP_WH', None, None, None, 15, None, None, None, None, None, None, None, None, None)
     # er_wh = Device('ER_WH', None, None, None, 3, None, None, None, None, None, None, None, None, None)
     devices = []
     devices.append(hp_sh)
@@ -160,17 +160,33 @@ if __name__ == "__main__":
     devices_SH_HP = []
     devices_SH_HP.append(hp_sh)
     devices_SH_HP.append(hp_wh)
-    house_SH_HP = HouseType('House in CZ 3 with SH and HP', 1, 3, 0, 0, 0, devices_SH_HP)
-    # print("{} annual usage: {}".format(house_SH_HP.type, house_SH_HP.get_total_annual_usage(4, "2011", house_SH_HP.end_uses)))
-    # print("{} January usage: {}".format(house_SH_HP.type, house_SH_HP.get_total_annual_usage(4, "2011", house_SH_HP.end_uses)))
-    # print("{} annual cost with $0.18 base rate: ${}".format(house_SH_HP.type, house_SH_HP.get_annual_cost_base_price(4, "2011", house_SH_HP.end_uses, .18)))
+    house_SH_HP = HouseType('House in CZ 15 with SH and HP', 1, 15, 0, 0, 0, devices_SH_HP)
     house_SH_HP.create_year_dict(2014)
-    # print(house_SH_HP.get_peak_energy_usage_per_month(3, 2011, house_SH_HP.end_uses))
-    print("Yearly energy costs under flat rate plan: {}".format(house_SH_HP.flat(0.19)))
-    print("Yearly energy costs under tiered rate plan: {}".format(house_SH_HP.tier()))
-    print("Yearly energy costs under tou rate plan: {}".format(house_SH_HP.tou()))
 
+    for month in months:
+        print("{} energy usage: {}".format(month, house_SH_HP.get_hourly_usage_for_months(month, month, 2014)))
 
+    print("TEST ANNUAL ENERGY USAGE AND EMISSIONS")
+    print("{} annual usage: {}".format(house_SH_HP.type, house_SH_HP.get_total_annual_usage(2014)))
+    print("{} annual emissions including refrigerant leakage: {}".format(house_SH_HP.type, house_SH_HP.get_total_annual_emissions(2014)))
+    print("{} annual emissions not including refrigerant leakage: {}\n".format(house_SH_HP.type, house_SH_HP.get_annual_emissions(2014)))
+
+    print("TEST MONTHLY ENERGY USAGE AND EMISSIONS")
+    print("{} January usage: {}".format(house_SH_HP.type, house_SH_HP.get_hourly_usage_for_months('Jan', 'Jan', 2014)))
+    print("{} January emissions: {}\n".format(house_SH_HP.type, house_SH_HP.get_monthly_emissions('Jan', 'Jan', 2014)))
+
+    print("TEST FLAT, TIERED, AND TOU RATE FOR ANNUAL ENERGY USAGE")
+    print("Yearly energy costs under flat rate plan: {}".format(house_SH_HP.yearly_cost('flat')))
+    print("April-December energy costs under flat rate plan: {}".format(house_SH_HP.flat_month(4, 12)))
+    print("Yearly energy costs under tiered rate plan: {}".format(house_SH_HP.yearly_cost('tier')))
+    print("April-December energy costs under tiered rate plan: {}".format(house_SH_HP.tier_month(4, 12)))
+    # print("January energy costs under tiered rate plan: {}".format(house_SH_HP.tier_month(1, 1)))
+    # print("June energy costs under tiered rate plan: {}".format(house_SH_HP.tier_month(6, 6)))
+    print("Yearly energy costs under tou rate plan: {}".format(house_SH_HP.yearly_cost('tou')))  # STILL NEED TO TEST
+    print("April-December energy costs under tou rate plan: {}".format(house_SH_HP.tou_month(4, 12)))
+
+    # print("\nANNUAL EMISSIONS BASED ON HOURLY RATES")
+    # print(house_SH_HP.get_annual_emissions_hourly())
 """
     total = 0
     for key in months.keys():
