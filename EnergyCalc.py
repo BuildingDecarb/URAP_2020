@@ -185,7 +185,8 @@ if __name__ == "__main__":
     print("Yearly energy costs under tou rate plan: {}".format(house_SH_HP.yearly_cost('tou')))  # STILL NEED TO TEST
     print("April-December energy costs under tou rate plan: {}".format(house_SH_HP.tou_month(4, 12)))
 
-
+    # print("\nANNUAL EMISSIONS BASED ON HOURLY RATES")
+    # print(house_SH_HP.get_annual_emissions_hourly())
 """
     total = 0
     for key in months.keys():

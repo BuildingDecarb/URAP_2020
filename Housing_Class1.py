@@ -5,6 +5,8 @@ Created on Wed Dec 27 05:36:53 2017
 """
 from Appliances_Class import *
 from Inputs_Energy import *
+import CAISO
+from CAISO.mapping.py import *
 import copy
 # from AnnualHeatDemand import AnnualEngDemand
 
@@ -292,6 +294,22 @@ class HouseType:
         """
         total_annual_energy_usage = self.get_total_annual_usage(year)
         return total_annual_energy_usage * ElecEmisYrly[year]
+
+    def get_annual_emissions_hourly(self):
+        result = {}
+        for end_use in self.end_uses:
+            total = 0
+            year_dict = self.year_dict[end_use]
+            for day in year_dict:
+                month = day.datetime.month
+                month_emissions = rates.iloc[month - 1]
+                counter = 0
+                for item in month_emissions.iteritems():
+                    total += item[1] * day.use[counter]
+                    counter += 1
+            result[end_use] = total
+        return result
+
 
     def get_annual_emissions_per_enduse(self, year):
         result = {}
