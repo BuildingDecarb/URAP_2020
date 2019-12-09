@@ -4,6 +4,9 @@ Created on Wed Dec 27 05:36:53 2017
 @author: shubaraghavan
 """
 from Appliances_Class import *
+from Inputs_Energy import *
+import CAISO
+from CAISO.mapping.py import *
 import copy
 # from AnnualHeatDemand import AnnualEngDemand
 
@@ -16,6 +19,9 @@ import numpy as np
 # import matplotlib.pyplot as plt
 from matplotlib.pyplot import *
 # import matplotlib.patches as mpatch
+import csv
+import pandas as pd
+import datetime
 
 
 def binomial_draw(p, n=1, N=1):
@@ -33,12 +39,28 @@ def remove_device(devlist, thisdevice, devicename):
 """List of 16 dictionaries, each corresponding to a dictionary. Each dictionary maps
 a tuple of year and end-use to a list of total energy usage for all hours"""
 
-hourly_energy = []
-for i in range(16):
-    hourly_energy.append({})
-
+days_in_months = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+months = {"Jan": 0,
+          "Feb": 1,
+          "Mar": 2,
+          "Apr": 3,
+          "May": 4,
+          "Jun": 5,
+          "Jul": 6,
+          "Aug": 7,
+          "Sep": 8,
+          "Oct": 9,
+          "Nov": 10,
+          "Dec": 11}
+seasons = {"Winter": ("Jan", "Feb"),
+           "Spring": ("Mar", "May"),
+           "Summer": ("Jun", "Aug"),
+           "Fall": ("Sep", "Nov")}
 
 class HouseType:
+
+    hourly_energy = [{} for x in range(16)]
+
     def __init__(self, type, HouseNum, cznum, size1, size2, vintage, devices, is_new=False):
         self.type = type  # SingleFam, Multi_Fam, apt, mobile
         self.HouseNum = HouseNum
@@ -47,10 +69,12 @@ class HouseType:
         self.size2 = size2  # surface area of the roof
         self.vintage = vintage
         self.devices = devices  # device class
+        self.end_uses = [device.name for device in self.devices]
+        self.year_dict = {}
         self.is_new = is_new  # boolean
 
-        if self.devices[0].vintage <= 2007:
-            pp = binomial_draw(0.1)
+        #if self.devices[0].vintage <= 2007:
+        #    pp = binomial_draw(0.1)
 
         #  if pp ==0:
         #          self.versionId = 1
@@ -64,13 +88,335 @@ class HouseType:
 
     # def HHCountWithdevice(self, devicetype):
 
+    class Day:
+        def __init__(self, datetime, season, use):
+            self.season = season
+            # self.weekday = "weekday"
+            self.datetime = datetime
+            self.use = use
+            self.dayuse = sum(self.use)
+
+        """
+        def set_season(self, season):
+            self.season = season
+
+        def set_day(self, weekday):
+            self.weekday = weekday
+        """
+
+    def create_year_dict(self, year):
+        for end_use in self.end_uses:
+            self.year_dict[end_use] = self.create_year(self.cznum, year, end_use)
+
+    def create_year(self, cznum, year, end_use):
+        daylist = []
+        use = []
+        curr_datetime = datetime.datetime(year, 1, 1)
+        usage = HouseType.hourly_energy[cznum - 1][year, end_use]
+        for i in range(len(usage)):
+            use.append(usage[i])
+            if (i + 1) % 24 == 0:
+                if 6 <= curr_datetime.month <= 9:
+                    season = "summer"
+                else:
+                    season = "winter"
+                daylist.append(HouseType.Day(curr_datetime, season, use))
+                use = []
+                curr_datetime = curr_datetime + datetime.timedelta(days=1)
+        return daylist
+
+    """Calculates yearly price for a house based on a given method. TODO: SHOULD WE MAKE CODE
+    CLEANER BY DEFINING THE FLAT AND TIER RATES AS CLASS ATTRIBUTES?
+    I THOUGHT ABOUT IT, BUT DOES NOT REALLY MAKE SENSE AS A TRAIT OF A SINGLE HOUSE"""
+
+
+    def yearly_cost(self, method, flat_rate=0.19, baseline=15, tier1=0.22376, tier2=0.28159, tier3=0.49334,
+                    speak=0.25354, soffpeak=0.20657, wpeak=0.18022, woffpeak=0.17133):
+        if method == 'flat':
+            return self.flat(flat_rate)
+        elif method == 'tier':
+            return self.tier(baseline, tier1, tier2, tier3)
+        elif method == 'tou':
+            return self.tou(speak, soffpeak, wpeak, woffpeak)
+
+    """Calculates price over a range of months for a house based on a given method."""
+
+    def cost_for_month_range(self, method, st_month, end_month, flat_rate=0.19, baseline=15, tier1=0.22376, tier2=0.28159, tier3=0.49334,
+                             speak=0.25354, soffpeak=0.20657, wpeak=0.18022, woffpeak=0.17133):
+        if method == 'flat':
+            return self.flat_month(st_month, end_month)
+        elif method == 'tier':
+            return self.tier_month(st_month, end_month)
+        elif method == 'tou':
+            return self.tou_month(st_month, end_month)
+
+    def flat_month(self, st_month, end_month, price=0.19):
+        flat_use = {}
+        for end_use, daylist in self.year_dict.items():
+            parttotaluse = 0
+            for day in daylist:
+                if st_month <= day.datetime.month <= end_month:
+                    parttotaluse = parttotaluse + day.dayuse
+            flat_use[end_use] = parttotaluse * price
+        flat_use["Total"] = sum(list(flat_use.values()))
+        return flat_use
+
+
+    def flat(self, price=0.19):
+        """flat_use = {}
+        for end_use, daylist in self.year_dict.items():
+            parttotaluse = 0
+            for day in daylist:
+                #print(type(day))
+                parttotaluse = parttotaluse + day.dayuse
+            flat_use[end_use] = parttotaluse * price
+        flat_use["Total"] = sum(list(flat_use.values()))"""
+        return self.flat_month(1, 12, price)
+
+
+
+    """TODO: DOUBLE-CHECK THIS IS THE CORRECT WAY TO CALCULATE MONTHLY TIERED PRICING.
+    I DID WHAT MAKES THE MOST LOGICAL SENSE"""
+    def tier_month(self, st_month, end_month, baseline=15, tier1=0.22376, tier2=0.28159, tier3=0.49334):
+        tiered_use = {}
+        for end_use in self.year_dict.keys():
+            daylist, totaluse, monthlyuse, i = self.year_dict[end_use], 0, [], 1
+            for day in daylist:
+                if day.datetime.month == i:
+                    totaluse = totaluse + day.dayuse
+                    continue
+                i += 1
+                monthlyuse.append(totaluse)
+                totaluse = 0 + day.dayuse
+            monthlyuse.append(totaluse) # Takes December into account
+            totalcost = 0
+            for i in range(st_month, end_month + 1):
+                totalcost = totalcost + min(baseline, monthlyuse[i-1]) * tier1 + max(0, monthlyuse[i-1] - baseline)\
+                            * tier2 + max(0, monthlyuse[i-1] - 4*baseline) * tier3
+            tiered_use[end_use] = totalcost
+        tiered_use["Total"] = sum(list(tiered_use.values()))
+        return tiered_use
+
+    def tier(self, baseline=15, tier1=0.22376, tier2=0.28159, tier3=0.49334):
+        """# https://www.pge.com/tariffs/assets/pdf/tariffbook/ELEC_SCHEDS_E-1.pdf
+        tiered_use = {}
+        for end_use in self.year_dict.keys():
+            daylist, totaluse, monthlyuse, i = self.year_dict[end_use], 0, [], 1
+            for day in daylist:
+                if day.datetime.month == i:
+                    totaluse = totaluse + day.dayuse
+                    continue
+                i += 1
+                monthlyuse.append(totaluse)
+                totaluse = 0 + day.dayuse
+            monthlyuse.append(totaluse) # Takes December into account
+            totalcost = 0
+            for month in monthlyuse:
+                totalcost = totalcost + min(baseline, month) * tier1 + max(0, min(month - baseline, 3 * baseline)) * tier2 + max(0, month - 4*baseline) * tier3
+            tiered_use[end_use] = totalcost
+        tiered_use["Total"] = sum(list(tiered_use.values()))"""
+        return self.tier_month(1, 12)
+
+
+    def tou_month(self, st_month, end_month, speak=0.25354, soffpeak=0.20657, wpeak=0.18022, woffpeak=0.17133):
+        tou_use = {}
+        for end_use in self.year_dict.keys():
+            speaksum, soffpeaksum, wpeaksum, woffpeaksum = 0, 0, 0, 0 #summer and winter peak/offpeak
+            daylist= self.year_dict[end_use]
+            for day in daylist: #Could make more efficient by a constant factor later if necessary
+                if st_month <= day.datetime.month <= end_month:
+                    if day.season == "summer":
+                        if day.datetime.weekday() < 5: # Checks for a weekend
+                            speaksum = speaksum + sum(day.use[14:19]) # Peak hours are 3 PM - 8 PM
+                            soffpeaksum = soffpeaksum + sum(day.use[:14]) + sum(day.use[19:])
+                        else:
+                            soffpeaksum = soffpeaksum + day.dayuse
+                    else:
+                        if day.datetime.weekday() < 5:
+                            wpeaksum = wpeaksum + sum(day.use[14:19])
+                            woffpeaksum = woffpeaksum + sum(day.use[:14]) + sum(day.use[19:])
+                        else:
+                            woffpeaksum = woffpeaksum + day.dayuse
+            end_use_price = speaksum * speak + soffpeaksum * soffpeak + wpeaksum * wpeak + woffpeaksum * woffpeak
+            tou_use[end_use] = end_use_price
+        tou_use["Total"] = sum(list(tou_use.values()))
+        return tou_use
+
+    def tou(self, speak=0.25354, soffpeak=0.20657, wpeak=0.18022, woffpeak=0.17133):
+        # https://www.pge.com/tariffs/assets/pdf/tariffbook/ELEC_SCHEDS_EL-TOU.pdf
+        """tou_use = {}
+        for end_use in self.year_dict.keys():
+            speaksum, soffpeaksum, wpeaksum, woffpeaksum = 0, 0, 0, 0 #summer and winter peak/offpeak
+            daylist= self.year_dict[end_use]
+            for day in daylist:
+                if day.season == "summer":
+                    if day.datetime.weekday() < 5: # Checks for a weekend
+                        speaksum = speaksum + sum(day.use[14:19]) # Peak hours are 3 PM - 8 PM
+                        soffpeaksum = soffpeaksum + sum(day.use[:14]) + sum(day.use[19:])
+                    else:
+                        soffpeaksum = soffpeaksum + day.dayuse
+                else:
+                    if day.datetime.weekday() < 5:
+                        wpeaksum = wpeaksum + sum(day.use[14:19])
+                        woffpeaksum = woffpeaksum + sum(day.use[:14]) + sum(day.use[19:])
+                    else:
+                        woffpeaksum = woffpeaksum + day.dayuse
+            end_use_price = speaksum * speak + soffpeaksum * soffpeak + wpeaksum * wpeak + woffpeaksum * woffpeak
+            tou_use[end_use] = end_use_price
+        tou_use["Total"] = sum(list(tou_use.values()))"""
+        return self.tou_month(1, 12)
+
+    def update_dictionary(filename, year, end_use):
+        with open(filename, 'r') as csvfile:
+            read_csv = csv.reader(csvfile)
+            for cznum in range(16):
+                csvfile.seek(0)
+                first = True
+                HouseType.hourly_energy[cznum][(year, end_use)] = []
+                for row in read_csv:
+                    if first:
+                        first = False
+                        continue
+                    HouseType.hourly_energy[cznum][(year, end_use)].append(float(row[cznum + 1]))
+
+    def get_total_annual_emissions(self, year):
+        """
+        Returns annual emissions including refrigerant leakage
+        """
+        ref_leakage = 0
+        for device in self.devices:
+            ref_leakage += device.AvgRefLeaks(year)
+        return self.get_annual_emissions(year) + ref_leakage
+
+    def get_annual_emissions(self, year):
+        """
+        Returns annual emissions NOT including refrigerant leakage
+        """
+        total_annual_energy_usage = self.get_total_annual_usage(year)
+        return total_annual_energy_usage * ElecEmisYrly[year]
+
+    def get_annual_emissions_hourly(self):
+        result = {}
+        for end_use in self.end_uses:
+            total = 0
+            year_dict = self.year_dict[end_use]
+            for day in year_dict:
+                month = day.datetime.month
+                month_emissions = rates.iloc[month - 1]
+                counter = 0
+                for item in month_emissions.iteritems():
+                    total += item[1] * day.use[counter]
+                    counter += 1
+            result[end_use] = total
+        return result
+
+
+    def get_annual_emissions_per_enduse(self, year):
+        result = {}
+        annual_usage = self.get_annual_usage()
+        for end_use in self.end_uses:
+            result[end_use] = annual_usage[end_use] * ElecEmisYrly[year]
+        return result
+
+    def get_monthly_emissions(self, st_month, end_month, year):
+        total_monthly_energy_usage = sum(list(self.get_hourly_usage_for_months(st_month, end_month, year).values()))
+        return total_monthly_energy_usage * ElecEmisYrly[year]
+
+
+    def get_hourly_usage_for_year(self, year, end_use):
+        """
+        Helper function to access the appropriate hourly usage for a particular cznum, year, and end use.
+        Returns a list of size 8760 with all the hourly energy usage.
+        """
+        return HouseType.hourly_energy[self.cznum - 1][(year, end_use)]
+
+    # def get_annual_cost_base_price(self, year, end_uses, rate): REMOVED BECAUSE INTEGRATED AMY'S PRICING CODE
+    #     annual_usage = self.get_total_annual_usage(year, end_uses)
+    #     return annual_usage * rate
+
+    def get_total_annual_usage(self, year):
+        usages = self.get_annual_usage(year)
+        total = 0
+        for usage in usages.values():
+            total += usage
+        return total
+
+    def get_annual_usage(self, year):
+        result = {}
+        for end_use in self.end_uses:
+            result[end_use] = sum(self.get_hourly_usage_for_year(year, end_use))
+        return result
+
+    def get_hourly_usage_for_seasons(self, season, year,):
+        """
+        Calculates the energy used for a particular season.
+        """
+        st_month = seasons[season][0]
+        end_month = seasons[season][1]
+        return self.get_hourly_usage_for_months(st_month, end_month, year,)
+
+    def get_hourly_usage_for_months(self, st_month, end_month, year, st_hour=0, end_hour=23):
+        """
+        Calculates the energy used for a particular month range.
+        st_month and end_month are strings containing the first 3 letters of the month.
+        st_hour and end_hour can be specified, but function defaults to calculating usage for the entire day.
+        """
+        st_month_num = months[st_month]
+        end_month_num = months[end_month]
+        st_day = 0
+        for i in range(st_month_num):
+            st_day += days_in_months[i]
+        end_day = 0
+        for i in range(end_month_num + 1):
+            end_day += days_in_months[i]
+        end_day -= 1
+        # print(str(st_day) + " " + str(end_day))
+        return self.hour_range(st_hour, end_hour, st_day, end_day, year)
+
+    def get_peak_energy_usage_per_month(self, year):
+        """
+        Gets the maximum energy usage and corresponding hour for each month
+        """
+        result = {}
+        for end_use in self.end_uses:
+            current = self.get_hourly_usage_for_year(year, end_use)
+            month_usages = {}
+            curr_hour = 0
+            for i in range(12):
+                max_hour = curr_hour
+                max_energy = 0
+                for j in range(curr_hour, curr_hour + 24 * days_in_months[i]):
+                    if current[j] > max_energy:
+                        max_hour = j + 1
+                        max_energy = current[j]
+                curr_hour = curr_hour + 24 * days_in_months[i]
+                month_usages[i + 1] = [max_hour, max_energy]
+            result[end_use] = month_usages
+        return result
+
+    def hour_range(self, st_hour, end_hour, st_day, end_day, year):
+        """
+        Calculates the energy used for a particular time range across a day range.
+        Ex: st_hour = 10, end_hour = 18, st_day = 0, end_day = 30
+        Returns the total hourly energy used from 10 a.m. to 6 p.m. each day
+        from January 1st to January 31st.
+        """
+        result = {}
+        for end_use in self.end_uses:
+            total = 0
+            hourly_usage_for_year = self.get_hourly_usage_for_year(year, end_use)
+            for i in range(st_day, end_day + 1):
+                for j in range(st_hour, end_hour + 1):
+                    day_in_hours = i * 24
+                    total += hourly_usage_for_year[day_in_hours + j]
+            # print(end_day * 24 + end_hour)
+            result[end_use] = total
+        return result
 
     """Function which returns hourly energy usage """
-
-
     def hourly_usage(self, year, end_use, hour):
         temp = (year, end_use)  # Tuple of variables
-        return hourly_energy[self.cznum][temp][hour - 1]
+        return HouseType.hourly_energy[self.cznum][temp][hour - 1]
 
 
     def HHenergyUsage_BTU(self):  # outputs heating and cooling energy in BTUs
@@ -772,7 +1118,7 @@ def getwtAvgEF(stats, deviceType, homeType, year):  # weighted average age is li
                     # print "home type wtavg",year, year-d.vintage, home.type, deviceType, life ,cnt
     return wtavgEF / cnt  # wtavg /cnt
 
-
+"""
 # horizon = 5   #breakeven carbon
 # CC =  0
 Stck1 = 1
@@ -907,3 +1253,4 @@ print
 ##np1 = SF1.HHCCBreakEven( SF2,year)
 ##np2 = SF1.HHCCBreakEven( SF3,year)
 ##print "HOUSES", np1, np2
+"""
