@@ -203,3 +203,24 @@ def graph_HP_SH_WH_By_Climate_And_Month():
                 ax.plot(x, houraveragebymonthclimate)
                 
     legend = fig.legend()
+
+
+# Solar output at a specific hour - load usage at specific hour graphed for each climate zone
+def graphPVMinusLoadUsage():
+    average_HP_SH(1, 2019, 1)
+    average_PV(1, 2019, 1)
+
+    fig = plt.figure()
+    fig.set_size_inches(40, 24)
+    fig.subplots_adjust(hspace=0.2, wspace=0.2)
+    for climate in range(1, 17):  # for now, only look at January
+        hourData = []
+        y_pos = np.arange(24)
+        ax = fig.add_subplot(4, 4, climate)
+        plt.title("Climate:" + str(climate))
+        for hour in range(0, 24):
+            hourDiff = average_PV(1, 2019, climate)[hour] - average_HP_SH(1, 2019, climate)[hour]
+            hourData.append(hourDiff)
+        plt.bar(y_pos, hourData, align='center', alpha=0.5)
+
+    plt.show()
