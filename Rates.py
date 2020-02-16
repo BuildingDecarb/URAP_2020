@@ -1,6 +1,11 @@
 import csv
 
-
+consumption_patterns = {
+    'summer_weekday' : [1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1],
+    'summer_weekend' : [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+    'nonsummer_weekday' : [3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 3, 3, 3],
+    'nonsummer_weekend' : [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+}
 class Day:
     def __init__(self, season, weekday, use=None):
         if use is None:
@@ -8,17 +13,17 @@ class Day:
         self.season = season
         self.weekday = weekday
         self.use = use
-        if self.use == []:
+        if not self.use:
             if season == "summer":
                 if weekday == "weekday":
-                    self.use = [1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1]
+                    self.use = consumption_patterns['summer_weekday']
                 else:
-                    self.use = [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+                    self.use = consumption_patterns['summer_weekend']
             else:
                 if weekday == "weekday":
-                    self.use = [3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 3, 3, 3]
+                    self.use = consumption_patterns['nonsummer_weekday']
                 else:
-                    self.use = [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+                    self.use = consumption_patterns['nonsummer_weekend']
         self.dayuse = sum(self.use)
 
 
