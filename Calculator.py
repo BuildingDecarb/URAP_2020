@@ -43,6 +43,10 @@ def daterange(start_date, end_date):
 # pricing scheme will have a flat_rate, 
 # tiers is a list of two-tuples: (threshold: price above that threshold)
 # tou is a list of 3-tuples: (begin_time, end_time, rate)
+
+'''
+Calculates the cost of energe usage per month
+'''
 def cost(data, begin_date, end_date, climate_zone, pricing_scheme):
     # Take the appropriate column and data from climate_zone
     # Create data_climate_zone
