@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime, date, timedelta
 from calendar import monthrange
+from PricingScheme import *
 # TODO: figure out how to import PricingScheme class
 
 wh_data, sh_data = None, None
