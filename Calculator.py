@@ -1,13 +1,8 @@
-# This will:
-# 1. Read LoadHourlyProfileData/HP_SH and HP_WH
-# 2. Store that data in a dataframe
-# 3. 
 import numpy as np
 import pandas as pd
 from datetime import datetime, date, timedelta
 from calendar import monthrange
 from PricingScheme import *
-# TODO: figure out how to import PricingScheme class
 
 wh_data, sh_data = None, None
 def process_data():
@@ -24,20 +19,6 @@ def energy_usage(data, month, climate_zone):
         for idx in range(r[0], r[1]):
             total += data.loc[idx].iloc[climate_zone]
     return total
-
-'''
-Converts date to a range of 24 indices in the dataframe
-'''
-def date_to_range(date):
-    day_of_year = date.timetuple().tm_yday
-    return (day_of_year * 24, (day_of_year + 1) * 24)
-
-'''
-Yields a python range iterator for dates that makes it easier to go through dates
-'''
-def daterange(start_date, end_date):
-    for n in range(int ((end_date - start_date).days)):
-        yield start_date + timedelta(n)
 
 # begin_date/end_date: use python datetime.date class
 # pricing scheme will have a flat_rate, 
@@ -56,6 +37,6 @@ def cost(data, begin_date, end_date, climate_zone, pricing_scheme):
 process_data()
 june = energy_usage(sh_data, 6, 9)
 jan = energy_usage(sh_data, 1, 9)
-print(june, jan)
-c = cost(wh_data, date(1, 1, 1), date(1, 3, 1), 5, Scheme(scheme='tiered', flat_rate=1))
+#print(june, jan)
+c = cost(wh_data, date(1, 1, 1), date(1, 3, 1), 2, Scheme(scheme='tou'))
 print(c)
