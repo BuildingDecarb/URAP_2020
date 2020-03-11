@@ -20,6 +20,16 @@ def season(d):
     if d.month >= 5 and d.month < 9:
         return 'summer'
     return 'winter'
+
+def energy_usage(data, month, climate_zone):
+    total = 0
+    days_in_month = monthrange(1, month)[1]
+    for d in range(1, days_in_month + 1):
+        day = date(1, month, d)
+        r = date_to_range(day)
+        for idx in range(r[0], r[1]):
+            total += data.loc[idx].iloc[climate_zone]
+    return total
 # pricing scheme has a flat rate,
 # tiers is a list of two-tuples: (monthly threshold: price above that threshold)
 # tou is a list of peak rate, peak begin time, peak end time, off-peak rate
@@ -30,7 +40,7 @@ class Scheme:
         self.tiers = [15, 0.22376, 0.28159, 0.49334]
         self.tou = [0.25354, 0.20657, 0.18022, 0.17133]
 
-    def cost(self, data, climate_zone, begin_date, end_date):
+    def cost(self, data, climate_zone, begin_date, end_date, div=1):
         total = 0
         if self.scheme == 'flat_rate':
             for d in daterange(begin_date, end_date):
@@ -42,18 +52,19 @@ class Scheme:
             tier1 = self.tiers[1]
             tier2 = self.tiers[2]
             tier3 = self.tiers[3]
-            begin_index = date_to_range(begin_date)[0]
-            end_index = date_to_range(end_date)[1]
-            total_energe_use = 0
-            for i in range(begin_index, end_index):
-                total_energe_use += data.loc[i].iloc[climate_zone]
+            
             total_cost = 0
-            if total_energe_use <= baseline:
-                total_cost = total_energe_use * tier1
-            elif total_energe_use > baseline and total_energe_use <= 4 * baseline:
-                total_cost = baseline * tier1 + (total_energe_use - baseline) * tier2
-            else:
-                total_cost = baseline * tier1 + 3 * baseline * tier2 + (total_energe_use - 4 * baseline) * tier3
+            for d in daterange(begin_date, end_date):
+                total_energe_use = 0
+                for idx in range(date_to_range(d)[0], date_to_range(d)[1]):
+                    total_energe_use += data.iloc[idx, climate_zone]
+                total_energe_use /= div
+                if total_energe_use <= baseline:
+                    total_cost += total_energe_use * tier1
+                elif total_energe_use > baseline and total_energe_use <= 4 * baseline:
+                    total_cost += baseline * tier1 + (total_energe_use - baseline) * tier2
+                else:
+                    total_cost += baseline * tier1 + 3 * baseline * tier2 + (total_energe_use - 4 * baseline) * tier3
             return total_cost
         elif self.scheme == 'tou':
             speak = self.tou[0]
