@@ -5,9 +5,9 @@ from matplotlib.pyplot import *
 from Bldg_Read_test import *
 from matplotlib.pyplot import figure
 
-name = "Kern_Bodfish"           #"FRE"   #'KER', 'TUL' 'Kern_Bodfish', 'Kern_Weedpatch', 'Kern_Losthills'
+name = "TUL"           #"FRE"   #'KER', 'TUL' 'Kern_Bodfish', 'Kern_Weedpatch', 'Kern_Losthills'
 name1 = name
-filename = name + ".csv"
+filename = name +"2016.csv"
 
 cnty = pd.read_csv(filename)
 building_types = cnty['Typef'].unique()
