@@ -2,8 +2,8 @@
 #The doc that stores information about the total number of customers in each dataset.
 from AJ_Day_Year_Class import *
 
-folder = 'anonymized_1in10_actual_actual_2014'
-summary_file = folder + "/"  + folder + "_cluster_summary.csv"
+folder = 'anonymized_1in10_actual_actual_2014'  #EDIT THIS TO READ THE RIGHT FILE..in the anonymized data folder.
+summary_file = folder + "/"  + folder + "_cluster_summary.csv"  
 customersumm = pd.read_csv(summary_file, index_col=1, header=0)
 ##______CLIMATE ZONE-----------------
 ###############################################
@@ -16,7 +16,7 @@ customers = customersumm.loc[filename, 'customer_count']
 customers = float(customers.replace(',', ''))
 cust_cnt = 1.0/customers
 
-sh = "HP_SH_HourlyProfiles.csv"
+sh = "HP_SH_HourlyProfiles.csv"         
 wh = "HP_WH_HourlyProfiles.csv"
 filename = folder + "/" + filename + '.csv'
 df = pd.read_csv(filename)
